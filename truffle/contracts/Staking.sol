@@ -31,4 +31,15 @@ contract Staking is Ownable {
         emit PoolCreated(_tokenAddress, _rewardPerSecond, _symbol);
     }
 
+
+    // Dans Remix utiliser IERC20 avec le parametre "At adress" adresse du token de rewards puis dans l'interface "Approve" l'adresse du contrat de Staking et amout = 1000000000000000000 = 1 ETH
+    function deposit(uint _amount, address _asset) external onlySupportedToken(_asset) {
+        reserves[_asset].token.transferFrom(msg.sender, address(this), _amount);
+        reserves[_asset].token.approve(address(this), _amount);
+        balances[msg.sender][_asset].lastTransactTimeStamp = block.timestamp;
+        updateRewardBalance(_asset);
+        balances[msg.sender][_asset].amount += _amount;
+        emit Deposited(_amount, _asset, msg.sender);
+    }
+
 }
