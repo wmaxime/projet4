@@ -8,6 +8,9 @@ contract EVCT is ERC20, Ownable {
 
     mapping(address => bool) admins;
 
+    event AdminAllowed(address adminAddress);
+    event AdminRevoked(address adminAddress);
+
     constructor() ERC20("EV Charging Token", "EVCT") {}
 
     function mint(address recipient, uint256 amount) external {
@@ -17,10 +20,12 @@ contract EVCT is ERC20, Ownable {
 
     function addAdmin(address _admin) external onlyOwner {
         admins[_admin] = true;
+        emit AdminAllowed(_admin);
     }
 
     function removeAdmin(address _admin) external onlyOwner {
         admins[_admin] = false;
+        emit AdminRevoked(_admin);
     }
 
     function getAdmin(address _admin) external view returns (bool) {
