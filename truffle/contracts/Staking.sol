@@ -28,6 +28,7 @@ contract Staking is Ownable {
     
     event PoolCreated (address tokenAddress, uint rewardPerSecond, string symbol);
     event Deposited(uint amount, address asset, address user);
+    event StakedAmountUpdated (address sender, address tokenAddress, uint stakedAmount);
 
     //function createLiquidityPool(address _tokenAddress, address _oracleAggregatorAddress, uint _rewardPerSecond, string calldata _symbol) external onlyOwner {
     function createLiquidityPool(address _tokenAddress, uint _rewardPerSecond, string calldata _symbol) external onlyOwner {
@@ -50,8 +51,7 @@ contract Staking is Ownable {
 
         // Get the liquidity pool data
         PoolData storage poolStorage = poolData[_tokenAddress];
-        // Get the staker data
-        //UserInfo storage userInfo = poolData.stakerData[msg.sender];
+        // Get the user data
         UserInfo storage userStorage = userInfo[_tokenAddress][msg.sender];
 
         // Update the staked amount and the timestamp to compute new amount reward at this specific time
@@ -63,4 +63,28 @@ contract Staking is Ownable {
         emit Deposited(_amount, _tokenAddress, msg.sender);
     }
 
+    function withdraw(address _tokenAddress, uint256 _amount) external {
+        
+        // Get the liquidity pool data
+        PoolData storage poolStorage = poolData[_tokenAddress];
+
+        // Get the user data
+        UserInfo storage userStorage = userInfo[_tokenAddress][msg.sender];
+        
+        // Check if the sender have this amount in pool
+        require(_amount <= userStorage.stakedAmount, "The amount is over your balance in this pool.");
+
+        // Update the staked amount and the timestamp to compute new amount reward at this specific time
+        userStorage.stakedAmount = userStorage.stakedAmount - _amount;
+        userStorage.updateTimestamp = block.timestamp;
+
+        // Update the tvl of the liquidity pool
+        poolStorage.totalValueLocked = poolStorage.totalValueLocked  - _amount;
+
+        // Send the token back to the sender
+        IERC20(_tokenAddress).transfer(msg.sender, _amount);
+        
+        emit StakedAmountUpdated(msg.sender, _tokenAddress, userStorage.stakedAmount);
+    }
+    
 }
