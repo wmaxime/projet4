@@ -3,9 +3,14 @@ pragma solidity ^0.8.18;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 contract Staking is Ownable {
+
+    using SafeERC20 for IERC20; //https://docs.openzeppelin.com/contracts/4.x/api/token/erc20#SafeERC20
+
+    IERC20 private rewardToken;
 
     struct UserInfo {
         uint256 stakedAmount; 
@@ -30,6 +35,12 @@ contract Staking is Ownable {
     event Deposited(uint amount, address asset, address user);
     event StakedAmountUpdated (address sender, address tokenAddress, uint stakedAmount);
 
+
+    constructor (IERC20 _rewardToken) {
+        rewardToken = _rewardToken;
+    }
+
+
     //function createLiquidityPool(address _tokenAddress, address _oracleAggregatorAddress, uint _rewardPerSecond, string calldata _symbol) external onlyOwner {
     function createLiquidityPool(address _tokenAddress, uint _rewardPerSecond, string calldata _symbol) external onlyOwner {
         require(!poolData[_tokenAddress].isCreated, "This pool is already created");
@@ -42,12 +53,14 @@ contract Staking is Ownable {
         emit PoolCreated(_tokenAddress, _rewardPerSecond, _symbol);
     }
 
-
     // Dans Remix utiliser IERC20 avec le parametre "At adress" adresse du token de rewards
     // puis dans l'interface "Approve" l'adresse du contrat de Staking et amout = 1000000000000000000 = 1 ETH
     function deposit(uint _amount, address _tokenAddress) external {
-        IERC20(_tokenAddress).transferFrom(msg.sender, address(this), _amount);
-        IERC20(_tokenAddress).approve(address(this), _amount);
+        
+        require(_amount > 0, "Amount must be over zero");
+
+        IERC20(_tokenAddress).safeTransferFrom(msg.sender, address(this), _amount);
+        IERC20(_tokenAddress).safeApprove(address(this), _amount);
 
         // Get the liquidity pool data
         PoolData storage poolStorage = poolData[_tokenAddress];
@@ -82,9 +95,13 @@ contract Staking is Ownable {
         poolStorage.totalValueLocked = poolStorage.totalValueLocked  - _amount;
 
         // Send the token back to the sender
-        IERC20(_tokenAddress).transfer(msg.sender, _amount);
+        IERC20(_tokenAddress).safeTransfer(msg.sender, _amount);
         
         emit StakedAmountUpdated(msg.sender, _tokenAddress, userStorage.stakedAmount);
     }
-    
+
+    function getBalance(address _tokenAddress) external view returns (uint stakedAmount) {
+        return(userInfo[_tokenAddress][msg.sender].stakedAmount);
+    }
+
 }
