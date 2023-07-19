@@ -14,15 +14,16 @@ contract Staking is Ownable {
 
     struct UserInfo {
         uint256 stakedAmount; 
-        uint256 updateTimestamp;
+        uint256 lastStakedTimestamp;
         uint256 reward;
     }
 
     struct PoolData {
         bool isCreated;
-        uint rewardPerSecond;
+        uint256 apr;
+        uint256 fees;
         //address oracleAggregatorAddress;
-        uint totalValueLocked;
+        uint256 totalValueLocked;
         string symbol;
     }
 
@@ -31,31 +32,66 @@ contract Staking is Ownable {
     // Map token adress then user address
     mapping (address => mapping (address => UserInfo)) public userInfo;
     
-    event PoolCreated (address tokenAddress, uint rewardPerSecond, string symbol);
-    event Deposited(uint amount, address asset, address user);
-    event StakedAmountUpdated (address sender, address tokenAddress, uint stakedAmount);
+    event PoolCreated (address tokenAddress, uint256 apr, uint256 fees, string symbol);
+    event Deposited(uint256 amount, address asset, address user);
+    event Withdrawn (address sender, address tokenAddress, uint256 stakedAmount);
 
 
     constructor (IERC20 _rewardToken) {
         rewardToken = _rewardToken;
     }
 
+    function displayStakingDuration(address _tokenAddress, address _user) public view returns (uint256) {
+        UserInfo storage userStorage = userInfo[_tokenAddress][_user];
+        uint256 stakingDuration = block.timestamp - userStorage.lastStakedTimestamp; // not ideal cause latency but it is ok
+        return stakingDuration;
+    }
+
+    function displayAmountRewardsInWei(address _tokenAddress, address _user) public view returns (uint256) {
+        PoolData storage poolStorage = poolData[_tokenAddress];
+        UserInfo storage userStorage = userInfo[_tokenAddress][_user];
+        uint256 stakingDuration = block.timestamp - userStorage.lastStakedTimestamp; // not ideal cause latency but it is ok
+        uint256 amountRewards = ((((userStorage.stakedAmount * 1e18 * poolStorage.apr) / 100) / 31536000) * stakingDuration);
+        return amountRewards;
+    }
+
+    function displayFeesAmountInWei(address _tokenAddress, address _user) public view returns (uint256) {
+        PoolData storage poolStorage = poolData[_tokenAddress];
+        UserInfo storage userStorage = userInfo[_tokenAddress][_user];
+        uint256 stakingDuration = block.timestamp - userStorage.lastStakedTimestamp; // not ideal cause latency but it is ok
+        uint256 amountRewards = ((((userStorage.stakedAmount * 1e18 * poolStorage.apr) / 100) / 31536000) * stakingDuration);
+        uint256 feesAmount = ((amountRewards * poolStorage.fees) /100);
+        return feesAmount;
+    }
+
+    function calculateReward(address _tokenAddress, address _user) public view returns (uint256) {
+        PoolData storage poolStorage = poolData[_tokenAddress];
+        UserInfo storage userStorage = userInfo[_tokenAddress][_user];
+        uint256 stakingDuration = block.timestamp - userStorage.lastStakedTimestamp; // not ideal cause latency but it is ok
+        // calcul : amountRewards = staked amount * reward rate per second * elapsedtime
+        // Be aware : amount multiply by 1e18 for decimal
+        uint256 amountRewards = ((((userStorage.stakedAmount * 1e18 * poolStorage.apr) / 100) / 31536000) * stakingDuration);
+        uint256 feesAmount = ((amountRewards * poolStorage.fees) /100);
+        uint256 returnRewards = amountRewards - feesAmount;
+        return returnRewards;
+    }
 
     //function createLiquidityPool(address _tokenAddress, address _oracleAggregatorAddress, uint _rewardPerSecond, string calldata _symbol) external onlyOwner {
-    function createLiquidityPool(address _tokenAddress, uint _rewardPerSecond, string calldata _symbol) external onlyOwner {
+    function createLiquidityPool(address _tokenAddress, uint256 _apr, uint256 _fees, string calldata _symbol) external onlyOwner {
         require(!poolData[_tokenAddress].isCreated, "This pool is already created");
 
-        poolData[_tokenAddress].rewardPerSecond = _rewardPerSecond;
+        poolData[_tokenAddress].apr = _apr;
+        poolData[_tokenAddress].fees = _fees;
         //poolData[_tokenAddress].oracleAggregatorAddress = _oracleAggregatorAddress;
         poolData[_tokenAddress].isCreated = true;
         poolData[_tokenAddress].symbol = _symbol;
 
-        emit PoolCreated(_tokenAddress, _rewardPerSecond, _symbol);
+        emit PoolCreated(_tokenAddress, _apr, _fees, _symbol);
     }
 
     // Dans Remix utiliser IERC20 avec le parametre "At adress" adresse du token de rewards
     // puis dans l'interface "Approve" l'adresse du contrat de Staking et amout = 1000000000000000000 = 1 ETH
-    function deposit(uint _amount, address _tokenAddress) external {
+    function deposit(uint256 _amount, address _tokenAddress) external {
         
         require(_amount > 0, "Amount must be over zero");
 
@@ -69,7 +105,7 @@ contract Staking is Ownable {
 
         // Update the staked amount and the timestamp to compute new amount reward at this specific time
         userStorage.stakedAmount = userStorage.stakedAmount + _amount;
-        userStorage.updateTimestamp = block.timestamp; 
+        userStorage.lastStakedTimestamp = block.timestamp; 
 
         // Update the tvl of the liquidity pool
         poolStorage.totalValueLocked = poolStorage.totalValueLocked  + _amount;
@@ -89,7 +125,7 @@ contract Staking is Ownable {
 
         // Update the staked amount and the timestamp to compute new amount reward at this specific time
         userStorage.stakedAmount = userStorage.stakedAmount - _amount;
-        userStorage.updateTimestamp = block.timestamp;
+        userStorage.lastStakedTimestamp = block.timestamp;
 
         // Update the tvl of the liquidity pool
         poolStorage.totalValueLocked = poolStorage.totalValueLocked  - _amount;
@@ -97,7 +133,7 @@ contract Staking is Ownable {
         // Send the token back to the sender
         IERC20(_tokenAddress).safeTransfer(msg.sender, _amount);
         
-        emit StakedAmountUpdated(msg.sender, _tokenAddress, userStorage.stakedAmount);
+        emit Withdrawn(msg.sender, _tokenAddress, userStorage.stakedAmount);
     }
 
     function getBalance(address _tokenAddress) external view returns (uint stakedAmount) {
