@@ -12,6 +12,9 @@ contract Staking is Ownable {
 
     IERC20 private rewardToken;
 
+    // decimal defnit pour le calcul des rewards
+    uint rewardDecimal = 1e15; // for testing 1e15 vs production 1e18
+
     struct UserInfo {
         uint256 stakedAmount; 
         uint256 lastStakedTimestamp;
@@ -23,9 +26,9 @@ contract Staking is Ownable {
         uint256 apr;
         uint256 fees;
         uint256 minimumClaim;
-        //address oracleAggregatorAddress;
         uint256 totalValueLocked;
         string symbol;
+        //address oracleAggregatorAddress;
     }
 
     // Map token adress
@@ -103,9 +106,20 @@ contract Staking is Ownable {
         PoolData storage poolStorage = poolData[_tokenAddress];
         UserInfo storage userStorage = userInfo[_tokenAddress][msg.sender];
 
+        // Set user current rewards to storage before deposit
+        // userStorage.reward = userStorage.reward + (calculateReward(_tokenAddress, msg.sender) / rewardDecimal); // for testing divide by 1e15 against 1e18
+        // Claim pending rewards before new deposit
+        if (userStorage.stakedAmount > 0) {
+            uint256 pendingReward = (calculateReward(_tokenAddress, msg.sender) / rewardDecimal);
+            if (pendingReward > 0) {
+                IERC20(_tokenAddress).transfer(msg.sender, pendingReward);
+            }
+        }
+
         // Update the staked amount and the timestamp to compute new amount reward at this specific time
         userStorage.stakedAmount = userStorage.stakedAmount + _amount;
         userStorage.lastStakedTimestamp = block.timestamp; 
+        userStorage.reward = 0;
 
         // Update the tvl of the liquidity pool
         poolStorage.totalValueLocked = poolStorage.totalValueLocked  + _amount;
@@ -120,7 +134,14 @@ contract Staking is Ownable {
         require(_amount <= userStorage.stakedAmount, "The amount is over your balance in this pool.");
 
         // save reward before withdraw to be able to claim it later
-        userStorage.reward = (calculateReward(_tokenAddress, msg.sender) / 1e15); // for testing divide by 1e15 against 1e18
+        //userStorage.reward = userStorage.reward + (calculateReward(_tokenAddress, msg.sender) / rewardDecimal); // for testing divide by 1e15 against 1e18
+        // Claim pending rewards before new deposit
+        if (userStorage.stakedAmount > 0) {
+            uint256 pendingReward = (calculateReward(_tokenAddress, msg.sender) / rewardDecimal);
+            if (pendingReward > 0) {
+                IERC20(_tokenAddress).transfer(msg.sender, pendingReward);
+            }
+        }
 
         // Update the staked amount and the timestamp to compute new amount reward at this specific time
         userStorage.stakedAmount = userStorage.stakedAmount - _amount;
@@ -140,8 +161,8 @@ contract Staking is Ownable {
         PoolData storage poolStorage = poolData[_tokenAddress];
         UserInfo storage userStorage = userInfo[_tokenAddress][msg.sender];
 
-        // Compute the reward
-        uint256 reward = (calculateReward(_tokenAddress, msg.sender) / 1e15); // for testing divide by 1e15 against 1e18
+        // calculate the reward
+        uint256 reward = (calculateReward(_tokenAddress, msg.sender) / rewardDecimal); // for testing divide by 1e15 against 1e18
  
         require(reward > 0, "No reward to claim");
         require(reward >= poolStorage.minimumClaim, "Not enough minimum rewards to claim");
