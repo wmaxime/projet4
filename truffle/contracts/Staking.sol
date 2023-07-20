@@ -28,22 +28,141 @@ contract Staking is Ownable {
         uint256 minimumClaim;
         uint256 totalValueLocked;
         string symbol;
+        bool paused;
         //address oracleAggregatorAddress;
     }
 
     // Map token adress
-    mapping(address => PoolData) poolData;
+    mapping(address => PoolData) public poolData;
     // Map token adress then user address
     mapping (address => mapping (address => UserInfo)) public userInfo;
     
-    event PoolCreated (address tokenAddress, uint256 apr, uint256 fees, string symbol);
+    event PoolCreated (address tokenAddress, uint256 apr, uint256 fees, uint256 minimumClaim, string symbol);
     event Deposited(uint256 amount, address asset, address user);
     event Withdrawn (address sender, address tokenAddress, uint256 amountWithdraw);
     event Claimed (address sender, address tokenAddress, uint rewardClaimedAmount);
+    event PausedPoolStatus (address tokenAddress, bool pausedStatus);
 
     constructor (IERC20 _rewardToken) {
         rewardToken = _rewardToken;
     }
+
+    function createLiquidityPool(address _tokenAddress, uint256 _apr, uint256 _fees, uint256 _minimumClaim, string calldata _symbol) external onlyOwner {
+        require(!poolData[_tokenAddress].isCreated, "This pool is already created");
+
+        poolData[_tokenAddress].apr = _apr;
+        poolData[_tokenAddress].fees = _fees;
+        poolData[_tokenAddress].minimumClaim = _minimumClaim;
+        poolData[_tokenAddress].isCreated = true;
+        poolData[_tokenAddress].symbol = _symbol;
+        // By default, LiquidityPool is paused
+        poolData[_tokenAddress].paused = true;
+        //poolData[_tokenAddress].oracleAggregatorAddress = _oracleAggregatorAddress;
+
+        emit PoolCreated(_tokenAddress, _apr, _fees, _minimumClaim, _symbol);
+    }
+
+    function setPoolPaused(address _tokenAddress, bool _value) external onlyOwner {
+        require(poolData[_tokenAddress].isCreated, "This pool is not created");
+        poolData[_tokenAddress].paused = _value;
+        emit PausedPoolStatus(_tokenAddress, _value);
+    }
+
+    // Dans Remix utiliser IERC20 avec le parametre "At adress" adresse du token de rewards
+    // puis dans l'interface "Approve" l'adresse du contrat de Staking et amout = 1000000000000000000 = 1 ETH
+    function deposit(uint256 _amount, address _tokenAddress) external {
+        //require(IERC20(_tokenAddress).allowance(msg.sender, address(this)) >= _amount, "Insufficient allowance");
+         require(_amount > 0, "Amount must be over zero");
+
+        //IERC20(_tokenAddress).approve(address(this), _amount);
+        IERC20(_tokenAddress).transferFrom(msg.sender, address(this), _amount);
+
+        PoolData storage poolStorage = poolData[_tokenAddress];
+        UserInfo storage userStorage = userInfo[_tokenAddress][msg.sender];
+        require(poolStorage.paused == false, "Pool must be unpaused");
+
+        // Set user current rewards to storage before deposit
+        // userStorage.reward = userStorage.reward + (calculateReward(_tokenAddress, msg.sender) / rewardDecimal); // for testing divide by 1e15 against 1e18
+        // Claim pending rewards before new deposit
+        if (userStorage.stakedAmount > 0) {
+            uint256 pendingReward = (calculateReward(_tokenAddress, msg.sender) / rewardDecimal);
+            if (pendingReward > 0) {
+                IERC20(_tokenAddress).transfer(msg.sender, pendingReward);
+                emit Claimed(msg.sender, _tokenAddress, pendingReward);
+            }
+        }
+
+        // Update the staked amount and the timestamp to compute new amount reward at this specific time
+        userStorage.stakedAmount = userStorage.stakedAmount + _amount;
+        userStorage.lastStakedTimestamp = block.timestamp; 
+        userStorage.reward = 0;
+
+        // Update the tvl of the liquidity pool
+        poolStorage.totalValueLocked = poolStorage.totalValueLocked  + _amount;
+        emit Deposited(_amount, _tokenAddress, msg.sender);
+    }
+
+    function withdraw(address _tokenAddress, uint256 _amount) external {
+        PoolData storage poolStorage = poolData[_tokenAddress];
+        UserInfo storage userStorage = userInfo[_tokenAddress][msg.sender];
+        
+        require(poolStorage.paused == false, "Pool must be unpaused");
+        require(_amount <= userStorage.stakedAmount, "The amount is over your balance in this pool.");
+
+        // save reward before withdraw to be able to claim it later
+        //userStorage.reward = userStorage.reward + (calculateReward(_tokenAddress, msg.sender) / rewardDecimal); // for testing divide by 1e15 against 1e18
+        // Claim pending rewards before new deposit
+        if (userStorage.stakedAmount > 0) {
+            uint256 pendingReward = (calculateReward(_tokenAddress, msg.sender) / rewardDecimal);
+            if (pendingReward > 0) {
+                IERC20(_tokenAddress).transfer(msg.sender, pendingReward);
+                emit Claimed(msg.sender, _tokenAddress, pendingReward);
+            }
+        }
+
+        // Update the staked amount and the timestamp to compute new amount reward at this specific time
+        userStorage.stakedAmount = userStorage.stakedAmount - _amount;
+        userStorage.lastStakedTimestamp = block.timestamp;
+
+        // Update the tvl of the liquidity pool
+        poolStorage.totalValueLocked = poolStorage.totalValueLocked  - _amount;
+
+        // Send the token back to the sender
+        //IERC20(_tokenAddress).approve(address(this), _amount);
+        IERC20(_tokenAddress).transfer(msg.sender, _amount);
+    
+        emit Withdrawn(msg.sender, _tokenAddress, _amount);
+    }
+
+    function claimReward(address _tokenAddress) external {
+        PoolData storage poolStorage = poolData[_tokenAddress];
+        UserInfo storage userStorage = userInfo[_tokenAddress][msg.sender];
+        require(poolStorage.paused == false, "Pool must be unpaused");
+        // calculate the reward
+        uint256 reward = (calculateReward(_tokenAddress, msg.sender) / rewardDecimal); // for testing divide by 1e15 against 1e18
+        require(reward > 0, "No reward to claim");
+        require(reward >= poolStorage.minimumClaim, "Not enough minimum rewards to claim");
+        
+        // Update the timestamp and the reward amount
+        userStorage.lastStakedTimestamp = block.timestamp;
+        userStorage.reward = 0;
+
+        // Send reward tokens to the msg.sender
+        IERC20(_tokenAddress).transfer(msg.sender, reward);
+
+        emit Claimed(msg.sender, _tokenAddress, reward);
+    }
+
+    function getUserInfo(address _tokenAddress) external view returns (UserInfo memory) {
+        return(userInfo[_tokenAddress][msg.sender]);
+    }
+
+    function getPoolData(address _tokenAddress) external view returns (PoolData memory) {
+        return poolData[_tokenAddress];
+    }
+
+
+// DEBUG FUNCTIONS
 
     function displayStakingDuration(address _tokenAddress, address _user) public view returns (uint256) {
         UserInfo storage userStorage = userInfo[_tokenAddress][_user];
@@ -78,144 +197,6 @@ contract Staking is Ownable {
         uint256 feesAmount = ((amountRewards * poolStorage.fees) / 100);
         uint256 returnRewards = amountRewards - feesAmount;
         return returnRewards;
-    }
-
-    //function createLiquidityPool(address _tokenAddress, address _oracleAggregatorAddress, uint _rewardPerSecond, string calldata _symbol) external onlyOwner {
-    function createLiquidityPool(address _tokenAddress, uint256 _apr, uint256 _fees, uint256 _minimumClaim, string calldata _symbol) external onlyOwner {
-        require(!poolData[_tokenAddress].isCreated, "This pool is already created");
-
-        poolData[_tokenAddress].apr = _apr;
-        poolData[_tokenAddress].fees = _fees;
-        poolData[_tokenAddress].minimumClaim = _minimumClaim;
-        poolData[_tokenAddress].isCreated = true;
-        poolData[_tokenAddress].symbol = _symbol;
-        //poolData[_tokenAddress].oracleAggregatorAddress = _oracleAggregatorAddress;
-
-        emit PoolCreated(_tokenAddress, _apr, _fees, _symbol);
-    }
-
-    // Dans Remix utiliser IERC20 avec le parametre "At adress" adresse du token de rewards
-    // puis dans l'interface "Approve" l'adresse du contrat de Staking et amout = 1000000000000000000 = 1 ETH
-    function deposit(uint256 _amount, address _tokenAddress) external {
-        //require(IERC20(_tokenAddress).allowance(msg.sender, address(this)) >= _amount, "Insufficient allowance");
-        require(_amount > 0, "Amount must be over zero");
-
-        //IERC20(_tokenAddress).approve(address(this), _amount);
-        IERC20(_tokenAddress).transferFrom(msg.sender, address(this), _amount);
-
-        PoolData storage poolStorage = poolData[_tokenAddress];
-        UserInfo storage userStorage = userInfo[_tokenAddress][msg.sender];
-
-        // Set user current rewards to storage before deposit
-        // userStorage.reward = userStorage.reward + (calculateReward(_tokenAddress, msg.sender) / rewardDecimal); // for testing divide by 1e15 against 1e18
-        // Claim pending rewards before new deposit
-        if (userStorage.stakedAmount > 0) {
-            uint256 pendingReward = (calculateReward(_tokenAddress, msg.sender) / rewardDecimal);
-            if (pendingReward > 0) {
-                IERC20(_tokenAddress).transfer(msg.sender, pendingReward);
-                emit Claimed(msg.sender, _tokenAddress, pendingReward);
-            }
-        }
-
-        // Update the staked amount and the timestamp to compute new amount reward at this specific time
-        userStorage.stakedAmount = userStorage.stakedAmount + _amount;
-        userStorage.lastStakedTimestamp = block.timestamp; 
-        userStorage.reward = 0;
-
-        // Update the tvl of the liquidity pool
-        poolStorage.totalValueLocked = poolStorage.totalValueLocked  + _amount;
-        emit Deposited(_amount, _tokenAddress, msg.sender);
-    }
-
-    function withdraw(address _tokenAddress, uint256 _amount) external {
-        PoolData storage poolStorage = poolData[_tokenAddress];
-        UserInfo storage userStorage = userInfo[_tokenAddress][msg.sender];
-        
-        // Check if the sender have this amount in pool
-        require(_amount <= userStorage.stakedAmount, "The amount is over your balance in this pool.");
-
-        // save reward before withdraw to be able to claim it later
-        //userStorage.reward = userStorage.reward + (calculateReward(_tokenAddress, msg.sender) / rewardDecimal); // for testing divide by 1e15 against 1e18
-        // Claim pending rewards before new deposit
-        if (userStorage.stakedAmount > 0) {
-            uint256 pendingReward = (calculateReward(_tokenAddress, msg.sender) / rewardDecimal);
-            if (pendingReward > 0) {
-                IERC20(_tokenAddress).transfer(msg.sender, pendingReward);
-                emit Claimed(msg.sender, _tokenAddress, pendingReward);
-            }
-        }
-
-        // Update the staked amount and the timestamp to compute new amount reward at this specific time
-        userStorage.stakedAmount = userStorage.stakedAmount - _amount;
-        userStorage.lastStakedTimestamp = block.timestamp;
-
-        // Update the tvl of the liquidity pool
-        poolStorage.totalValueLocked = poolStorage.totalValueLocked  - _amount;
-
-        // Send the token back to the sender
-        //IERC20(_tokenAddress).approve(address(this), _amount);
-        IERC20(_tokenAddress).transfer(msg.sender, _amount);
-    
-        emit Withdrawn(msg.sender, _tokenAddress, _amount);
-    }
-
-    function claimReward(address _tokenAddress) external {
-        PoolData storage poolStorage = poolData[_tokenAddress];
-        UserInfo storage userStorage = userInfo[_tokenAddress][msg.sender];
-
-        // calculate the reward
-        uint256 reward = (calculateReward(_tokenAddress, msg.sender) / rewardDecimal); // for testing divide by 1e15 against 1e18
- 
-        require(reward > 0, "No reward to claim");
-        require(reward >= poolStorage.minimumClaim, "Not enough minimum rewards to claim");
-        
-        // Update the timestamp and the reward amount
-        userStorage.lastStakedTimestamp = block.timestamp;
-        userStorage.reward = 0;
-
-        // Send reward tokens to the msg.sender
-        IERC20(_tokenAddress).transfer(msg.sender, reward);
-
-        emit Claimed(msg.sender, _tokenAddress, reward);
-    }
-
-/*    function claimLastReward(address _tokenAddress) external {
-        UserInfo storage userStorage = userInfo[_tokenAddress][msg.sender];
-
-        uint256 reward = userStorage.reward;
-        require(reward > 0, "No reward to claim");
-        userStorage.reward = 0;
-        userStorage.lastStakedTimestamp = block.timestamp;
-
-        rewardToken.transfer(msg.sender, reward);
-    }
-*/
-    function getUserBalance(address _tokenAddress) external view returns (uint256) {
-        return(userInfo[_tokenAddress][msg.sender].stakedAmount);
-    }
-
-    function getUserReward(address _tokenAddress) external view returns (uint256) {
-        return(userInfo[_tokenAddress][msg.sender].reward);
-    }
-
-    function getPoolTotalValueLocked(address _tokenAddress) external view returns (uint256) {
-        PoolData storage poolStorage = poolData[_tokenAddress];
-        return(poolStorage.totalValueLocked);
-    }
-
-    function getPoolApr(address _tokenAddress) external view returns (uint256) {
-        PoolData storage poolStorage = poolData[_tokenAddress];
-        return(poolStorage.apr);
-    }
-
-    function getPoolFees(address _tokenAddress) external view returns (uint256) {
-        PoolData storage poolStorage = poolData[_tokenAddress];
-        return(poolStorage.fees);
-    }
-
-    function getPoolMinimumClaim(address _tokenAddress) external view returns (uint256) {
-        PoolData storage poolStorage = poolData[_tokenAddress];
-        return(poolStorage.minimumClaim);
     }
 
 }
