@@ -113,6 +113,7 @@ contract Staking is Ownable {
             uint256 pendingReward = (calculateReward(_tokenAddress, msg.sender) / rewardDecimal);
             if (pendingReward > 0) {
                 IERC20(_tokenAddress).transfer(msg.sender, pendingReward);
+                emit Claimed(msg.sender, _tokenAddress, pendingReward);
             }
         }
 
@@ -140,6 +141,7 @@ contract Staking is Ownable {
             uint256 pendingReward = (calculateReward(_tokenAddress, msg.sender) / rewardDecimal);
             if (pendingReward > 0) {
                 IERC20(_tokenAddress).transfer(msg.sender, pendingReward);
+                emit Claimed(msg.sender, _tokenAddress, pendingReward);
             }
         }
 
