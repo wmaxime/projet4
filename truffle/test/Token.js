@@ -8,48 +8,88 @@ contract('EVCT', (accounts) => {
     const owner = accounts[0];
     const account1 = accounts[1];
     const account2 = accounts[2];
-    const account3 = accounts[3];
+    const tokenName = "EV Charging Token";
+    const tokenSymbol = "EVCT";
+    const tokenDecimals = "18";
 
     let TokenInstance;
 
-    describe("test addAdmin, getAdmin, mint", function () {
-
+    describe("Token properties", function () {
       beforeEach(async function () {
         TokenInstance = await EVCT.new({ from: owner });
       });
 
-        it("Only owner can add admin, revert", async () => {
-          expectRevert(TokenInstance.addAdmin(account1, { from: account1 }), "Ownable: caller is not the owner");
-        });
+      it("Get token name", async () => {
+        const storedData = await TokenInstance.name();
+        expect(storedData).to.be.equal(tokenName);
+      });
 
-        it("Should add Admin, get admin", async () => {
-          await TokenInstance.addAdmin(owner, { from: owner });
-          const storedData = await TokenInstance.getAdmin(owner, { from: owner });
-          expect(storedData).to.be.true;
-        });
+      it("Get token symbol", async () => {
+        const storedData = await TokenInstance.symbol();
+        expect(storedData).to.be.equal(tokenSymbol);
+      });
 
-      /*        it("Only owner can remove admin, revert", async () => {
-          expectRevert(TokenInstance.removeAdmin(owner, { from: owner }), "Ownable: caller is not the owner");
-        });
+      it("Get token decimals", async () => {
+        const storedData = await TokenInstance.decimals();
+        expect(storedData).to.be.bignumber.equal(new BN(tokenDecimals));
+      });
 
-  it("Should remove Admin, get admin", async () => {
-          await TokenInstance.addAdmin(account1, { from: owner });
-          await TokenInstance.removeAdmin(account1, { from: owner });
-          const storedData = await TokenInstance.getAdmin(account1, { from: owner });
-          expect(storedData).to.be.false;
-        }); */
+      it("Get token totalSupply", async () => {
+        const storedData = await TokenInstance.totalSupply();
+        expect(storedData).to.be.bignumber.equal(new BN(0));
+      });
+    });
 
-        it("Only owner can mint EVCT token, revert", async () => {
-          expectRevert(TokenInstance.mint(owner, 123, { from: owner }), "You are not admin");
-        });
+    describe("Check addAdmin, getAdmin", function () {
+      beforeEach(async function () {
+        TokenInstance = await EVCT.new({ from: owner });
+      });
 
-        it("Admin Should mint and get EVCT token", async () => {
-          const amount = 200;
-          await TokenInstance.addAdmin(owner, { from: owner });
-          await TokenInstance.mint(account1, amount, { from: owner });
-          const storedData = await TokenInstance.balanceOf(account1, { from: owner });
-          expect(storedData).to.be.bignumber.equal(new BN(amount));
-        });
+      it("Only owner can add admin, revert", async () => {
+        expectRevert(TokenInstance.addAdmin(account1, { from: account1 }), "Ownable: caller is not the owner");
+      });
+
+      it("Should add Admin, get admin", async () => {
+        await TokenInstance.addAdmin(owner, { from: owner });
+        const storedData = await TokenInstance.getAdmin(owner, { from: owner });
+        expect(storedData).to.be.true;
+      });
+    });
+
+    describe("Check removeAdmin", function () {
+      beforeEach(async function () {
+        TokenInstance = await EVCT.new({ from: owner });
+        await TokenInstance.addAdmin(account1, { from: owner });
+      });
+      
+      it("Only owner can remove admin, revert", async () => {
+        expectRevert(TokenInstance.removeAdmin(account1, { from: account1 }), "Ownable: caller is not the owner");
+      });
+
+      it("Should remove admin", async () => {
+        await TokenInstance.removeAdmin(account1, { from: owner });
+        const storedData = await TokenInstance.getAdmin(account1, { from: owner });
+        expect(storedData).to.be.false;
+      });
+    });
+
+    describe("Check mint, balanceOf", function () {
+      beforeEach(async function () {
+        TokenInstance = await EVCT.new({ from: owner });
+        await TokenInstance.addAdmin(owner, { from: owner });
+      });
+
+      it("Require : Only admins can mint", async () => {
+        expectRevert(TokenInstance.mint(account2, new BN(1000), { from: account1 }), "You are not admin");
+      });
+
+      it("Should mint", async () => {
+        const amount = 1000;
+        await TokenInstance.mint(account1, new BN(amount), { from: owner });
+        const storedData = await TokenInstance.balanceOf(account1, { from: owner });
+        expect(storedData).to.be.bignumber.equal(new BN(amount));
+      });
+
     });
 
 });
