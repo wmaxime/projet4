@@ -54,6 +54,11 @@ contract('EVCT', (accounts) => {
         const storedData = await TokenInstance.getAdmin(owner, { from: owner });
         expect(storedData).to.be.true;
       });
+      
+      it("Check Emit : AdminAllowed", async () => {
+        const findEvent = await TokenInstance.addAdmin(owner, { from: owner });
+        expectEvent(findEvent,"AdminAllowed" ,{adminAddress: owner});
+      });
     });
 
     describe("Check removeAdmin", function () {
@@ -70,6 +75,11 @@ contract('EVCT', (accounts) => {
         await TokenInstance.removeAdmin(account1, { from: owner });
         const storedData = await TokenInstance.getAdmin(account1, { from: owner });
         expect(storedData).to.be.false;
+      });
+
+      it("Check Emit : AdminRevoked", async () => {
+        const findEvent = await TokenInstance.removeAdmin(account1, { from: owner });
+        expectEvent(findEvent,"AdminRevoked" ,{adminAddress: account1});
       });
     });
 
