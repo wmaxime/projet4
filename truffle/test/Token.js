@@ -90,7 +90,7 @@ contract('EVCT', (accounts) => {
       });
 
       it("Require : Only admins can mint", async () => {
-        expectRevert(TokenInstance.mint(account2, new BN(1000), { from: account1 }), "You are not admin");
+        await expectRevert(TokenInstance.mint(account2, new BN(1000), { from: account1 }), "You are not admin");
       });
 
       it("Should mint", async () => {

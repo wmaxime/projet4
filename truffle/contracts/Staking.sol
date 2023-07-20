@@ -153,8 +153,8 @@ contract Staking is Ownable {
         emit Claimed(msg.sender, _tokenAddress, reward);
     }
 
-    function getUserInfo(address _tokenAddress) external view returns (UserInfo memory) {
-        return(userInfo[_tokenAddress][msg.sender]);
+    function getUserInfo(address _tokenAddress, address _userAddress) external view returns (UserInfo memory) {
+        return(userInfo[_tokenAddress][_userAddress]);
     }
 
     function getPoolData(address _tokenAddress) external view returns (PoolData memory) {
