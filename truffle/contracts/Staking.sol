@@ -13,7 +13,7 @@ contract Staking is Ownable {
     IERC20 private rewardToken;
 
     // decimal defnit pour le calcul des rewards
-    uint rewardDecimal = 1e15; // for testing 1e15 vs production 1e18
+    uint rewardDecimal = 1e18; // for testing 1e15 vs production 1e18
 
     struct UserInfo {
         uint256 stakedAmount; 
@@ -39,8 +39,8 @@ contract Staking is Ownable {
     
     event PoolCreated (address tokenAddress, uint256 apr, uint256 fees, uint256 minimumClaim, string symbol);
     event Deposited(uint256 amount, address asset, address user);
-    event Withdrawn (address sender, address tokenAddress, uint256 amountWithdraw);
-    event Claimed (address sender, address tokenAddress, uint rewardClaimedAmount);
+    event Withdrawn (address receiver, address tokenAddress, uint256 amountWithdraw);
+    event Claimed (address receiver, address tokenAddress, uint rewardClaimedAmount);
     event PausedPoolStatus (address tokenAddress, bool pausedStatus);
 
     constructor (IERC20 _rewardToken) {
@@ -55,7 +55,6 @@ contract Staking is Ownable {
         poolData[_tokenAddress].minimumClaim = _minimumClaim;
         poolData[_tokenAddress].isCreated = true;
         poolData[_tokenAddress].symbol = _symbol;
-        // By default, LiquidityPool is paused
         poolData[_tokenAddress].paused = true;
         //poolData[_tokenAddress].oracleAggregatorAddress = _oracleAggregatorAddress;
 
@@ -69,7 +68,7 @@ contract Staking is Ownable {
     }
 
     // Dans Remix utiliser IERC20 avec le parametre "At adress" adresse du token de rewards
-    // puis dans l'interface "Approve" l'adresse du contrat de Staking et amout = 1000000000000000000 = 1 ETH
+    // puis dans l'interface "Approve" l'adresse du contrat de Staking et amount = 1000000000000000000 = 1 ETH
     function deposit(uint256 _amount, address _tokenAddress) external {
         //require(IERC20(_tokenAddress).allowance(msg.sender, address(this)) >= _amount, "Insufficient allowance");
          require(_amount > 0, "Amount must be over zero");
@@ -134,11 +133,22 @@ contract Staking is Ownable {
         emit Withdrawn(msg.sender, _tokenAddress, _amount);
     }
 
+    function calculateReward(address _tokenAddress, address _user) public view returns (uint256) {
+        PoolData storage poolStorage = poolData[_tokenAddress];
+        UserInfo storage userStorage = userInfo[_tokenAddress][_user];
+        uint256 stakingDuration = block.timestamp - userStorage.lastStakedTimestamp; // not ideal cause latency but it is ok
+        // calcul : amountRewards = staked amount * reward rate per second * elapsedtime
+        // BE CAREFUL : amount multiplication by 1e18 for decimal so need to divide by 1e18 in the front
+        uint256 amountRewards = ((((userStorage.stakedAmount * 1e18 * poolStorage.apr) / 100) / 31536000) * stakingDuration);
+        uint256 feesAmount = ((amountRewards * poolStorage.fees) / 100);
+        uint256 netRewards = amountRewards - feesAmount;
+        return netRewards;
+    }
+
     function claimReward(address _tokenAddress) external {
         PoolData storage poolStorage = poolData[_tokenAddress];
         UserInfo storage userStorage = userInfo[_tokenAddress][msg.sender];
         require(poolStorage.paused == false, "Pool must be unpaused");
-        // calculate the reward
         uint256 reward = (calculateReward(_tokenAddress, msg.sender) / rewardDecimal); // for testing divide by 1e15 against 1e18
         require(reward > 0, "No reward to claim");
         require(reward >= poolStorage.minimumClaim, "Not enough minimum rewards to claim");
@@ -146,10 +156,7 @@ contract Staking is Ownable {
         // Update the timestamp and the reward amount
         userStorage.lastStakedTimestamp = block.timestamp;
         userStorage.reward = 0;
-
-        // Send reward tokens to the msg.sender
         IERC20(_tokenAddress).transfer(msg.sender, reward);
-
         emit Claimed(msg.sender, _tokenAddress, reward);
     }
 
@@ -185,18 +192,6 @@ contract Staking is Ownable {
         uint256 amountRewards = ((((userStorage.stakedAmount * 1e18 * poolStorage.apr) / 100) / 31536000) * stakingDuration);
         uint256 feesAmount = ((amountRewards * poolStorage.fees) / 100);
         return feesAmount;
-    }
-
-    function calculateReward(address _tokenAddress, address _user) public view returns (uint256) {
-        PoolData storage poolStorage = poolData[_tokenAddress];
-        UserInfo storage userStorage = userInfo[_tokenAddress][_user];
-        uint256 stakingDuration = block.timestamp - userStorage.lastStakedTimestamp; // not ideal cause latency but it is ok
-        // calcul : amountRewards = staked amount * reward rate per second * elapsedtime
-        // Be aware : amount multiplication by 1e18 for decimal so need to divide by 1e18 in the front
-        uint256 amountRewards = ((((userStorage.stakedAmount * 1e18 * poolStorage.apr) / 100) / 31536000) * stakingDuration);
-        uint256 feesAmount = ((amountRewards * poolStorage.fees) / 100);
-        uint256 returnRewards = amountRewards - feesAmount;
-        return returnRewards;
     }
 
 }

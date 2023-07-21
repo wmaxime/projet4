@@ -12,7 +12,7 @@ contract('Stacking', (accounts) => {
     const amount = 1000;
     const apr = new BN(150);
     const fees = new BN(3);
-    const minimumRewards = new BN(BigInt(200 * 10 ** 18));
+    const minimumRewards = new BN(200);
 
     let TokenInstance;
     let StakingInstance;
@@ -199,8 +199,77 @@ contract('Stacking', (accounts) => {
       it("Check Emit : Withdrawn", async () => {
         await StakingInstance.setPoolPaused(TokenInstance.address, false, { from: owner });
         const findEvent = await StakingInstance.withdraw(TokenInstance.address, amount, { from: account1 });
-        expectEvent(findEvent, "Withdrawn", {sender: account1, tokenAddress: TokenInstance.address, amountWithdraw: new BN(amount)});
+        expectEvent(findEvent, "Withdrawn", {receiver: account1, tokenAddress: TokenInstance.address, amountWithdraw: new BN(amount)});
       });
+    });
+
+    describe("Check STAKING CLAIM", function () {
+      let firstDepositTimestamp;
+      beforeEach(async function () {
+        TokenInstance = await EVCT.new({ from: owner });
+        await TokenInstance.addAdmin(owner, { from: owner });
+        await TokenInstance.mint(account1, new BN(amount), { from: owner });
+        StakingInstance = await Staking.new(TokenInstance.address, { from: owner });
+        await TokenInstance.mint(StakingInstance.address, new BN(amount), { from: owner });
+        await StakingInstance.createLiquidityPool(TokenInstance.address, apr, fees, minimumRewards, tokenSymbol, { from: owner });
+        await StakingInstance.setPoolPaused(TokenInstance.address, false, { from: owner });
+        await TokenInstance.approve(StakingInstance.address, amount, { from: account1 });
+        await StakingInstance.deposit(amount, TokenInstance.address, { from: account1 });
+        await StakingInstance.setPoolPaused(TokenInstance.address, true, { from: owner });
+        firstDepositTimestamp = await StakingInstance.userInfo.call(TokenInstance.address, account1, { from: account1 });
+      });
+
+      it("Require CLAIM : Pool must not be paused", async () => {
+        await expectRevert(StakingInstance.claimReward(TokenInstance.address, { from: account1 }), "Pool must be unpaused");
+      });
+
+      it("Require CLAIM : Rewards amount must be over zero", async () => {
+        await StakingInstance.setPoolPaused(TokenInstance.address, false, { from: owner });
+        await expectRevert(StakingInstance.claimReward(TokenInstance.address, { from: account1 }), "No reward to claim");
+      });
+
+      it("Require CLAIM : Rewards amount must be >= poolStorage.minimumClaim", async () => {
+        await StakingInstance.setPoolPaused(TokenInstance.address, false, { from: owner });
+        let duration = time.duration.days(30);
+        await time.increase(duration);
+        const storedData = await StakingInstance.calculateReward(TokenInstance.address, account1, { from: account1 });
+        const PoolStoredData = await StakingInstance.poolData.call(TokenInstance.address, { from: account1 });
+        console.log("MINIMUM AMOUNT ============ " + PoolStoredData.minimumClaim);
+        console.log("REWARDS AMOUNT ============ " + new BN(storedData/1e18));
+        await expectRevert(StakingInstance.claimReward(TokenInstance.address, { from: account1 }), "Not enough minimum rewards to claim");
+      });
+      
+      it("CLAIM : Staker should claim and receive rewards amount in his address balance", async function () {
+        await StakingInstance.setPoolPaused(TokenInstance.address, false, { from: owner });
+        let duration = time.duration.days(90);
+        await time.increase(duration);
+        const rewardAmount = await StakingInstance.calculateReward(TokenInstance.address, account1, { from: account1 });
+        await StakingInstance.claimReward(TokenInstance.address, { from: account1 });
+        const storedData = await TokenInstance.balanceOf.call(account1, { from: account1 });
+        expect(storedData).to.be.bignumber.equal(new BN(rewardAmount/1e18));
+      });
+
+      it("CLAIM : Staker should be able to claim and userStorage.lastStakedTimestamp should be increase", async function () {
+        await StakingInstance.setPoolPaused(TokenInstance.address, false, { from: owner });
+        let duration = time.duration.days(90);
+        await time.increase(duration);
+        await StakingInstance.claimReward(TokenInstance.address, { from: account1 });
+        const storedData = await StakingInstance.userInfo.call(TokenInstance.address, account1, { from: account1 });
+        expect(storedData.lastStakedTimestamp).to.be.bignumber.above(new BN(firstDepositTimestamp.lastStakedTimestamp));
+      });
+
+      it("Check Emit : Claimed", async () => {
+        await StakingInstance.setPoolPaused(TokenInstance.address, false, { from: owner });
+        let duration = time.duration.days(90);
+        await time.increase(duration);
+        const storedData = await StakingInstance.calculateReward(TokenInstance.address, account1, { from: account1 });
+        //const PoolStoredData = await StakingInstance.poolData.call(TokenInstance.address, { from: account1 });
+        //console.log("MINIMUM AMOUNT ============ " + PoolStoredData.minimumClaim);
+        //console.log("REWARDS AMOUNT ============ " + new BN(storedData/1e18));
+        const findEvent = await StakingInstance.claimReward(TokenInstance.address, { from: account1 });
+        expectEvent(findEvent, "Claimed", {receiver: account1, tokenAddress: TokenInstance.address, rewardClaimedAmount: new BN(storedData/1e18)});
+      });
+
     });
 
 });
