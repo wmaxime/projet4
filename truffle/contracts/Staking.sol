@@ -107,7 +107,7 @@ contract Staking is Ownable {
         UserInfo storage userStorage = userInfo[_tokenAddress][msg.sender];
         
         require(poolStorage.paused == false, "Pool must be unpaused");
-        require(_amount <= userStorage.stakedAmount, "The amount is over your balance in this pool.");
+        require(_amount <= userStorage.stakedAmount, "The amount is over your balance in this pool");
 
         // save reward before withdraw to be able to claim it later
         //userStorage.reward = userStorage.reward + (calculateReward(_tokenAddress, msg.sender) / rewardDecimal); // for testing divide by 1e15 against 1e18

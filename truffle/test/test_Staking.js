@@ -1,6 +1,6 @@
 const EVCT = artifacts.require("EVCT");
 const Staking = artifacts.require("Staking");
-const { BN, expectRevert, expectEvent } = require('@openzeppelin/test-helpers');
+const { BN, expectRevert, expectEvent, time } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
 contract('Stacking', (accounts) => {
@@ -75,7 +75,7 @@ contract('Stacking', (accounts) => {
 
     });
 
-    describe("Check STAKING operations", function () {
+    describe("Check STAKING DEPOSIT", function () {
       beforeEach(async function () {
         TokenInstance = await EVCT.new({ from: owner });
         await TokenInstance.addAdmin(owner, { from: owner });
@@ -132,9 +132,75 @@ contract('Stacking', (accounts) => {
         const findEvent = await StakingInstance.deposit(amount, TokenInstance.address, { from: account1 });
         expectEvent(findEvent, "Deposited", {amount: new BN(amount), asset: TokenInstance.address, user: account1});
       });
-
     });
 
+    describe("Check STAKING WITHDRAW", function () {
+      let firstDepositTimestamp;
+      beforeEach(async function () {
+        TokenInstance = await EVCT.new({ from: owner });
+        await TokenInstance.addAdmin(owner, { from: owner });
+        await TokenInstance.mint(account1, new BN(amount), { from: owner });
+        await TokenInstance.mint(account2, new BN(amount), { from: owner });
+        StakingInstance = await Staking.new(TokenInstance.address, { from: owner });
+        await TokenInstance.mint(StakingInstance.address, new BN(amount), { from: owner });
+        await StakingInstance.createLiquidityPool(TokenInstance.address, apr, fees, minimumRewards, tokenSymbol, { from: owner });
+        await StakingInstance.setPoolPaused(TokenInstance.address, false, { from: owner });
+        await TokenInstance.approve(StakingInstance.address, amount, { from: account1 });
+        await TokenInstance.approve(StakingInstance.address, amount, { from: account2 });
+        await StakingInstance.deposit(amount, TokenInstance.address, { from: account1 });
+        await StakingInstance.deposit(500, TokenInstance.address, { from: account2 });
+        await StakingInstance.setPoolPaused(TokenInstance.address, true, { from: owner });
+        firstDepositTimestamp = await StakingInstance.userInfo.call(TokenInstance.address, account1, { from: account1 });
+      });
 
+      it("Require WITHDRAW : Pool must not be paused", async () => {
+        await expectRevert(StakingInstance.withdraw(TokenInstance.address, amount, { from: account1 }), "Pool must be unpaused");
+      });
+ 
+      it("Require WITHDRAW : withdraw amount must be less than user staked amount", async () => {
+        await StakingInstance.setPoolPaused(TokenInstance.address, false, { from: owner });
+        const overAmount = amount + 500;
+        await expectRevert(StakingInstance.withdraw(TokenInstance.address, overAmount, { from: account1 }), "The amount is over your balance in this pool");
+      });
+      
+      it("WITHDRAW : Staker should be able to withdraw and get back the amount", async function () {
+        await StakingInstance.setPoolPaused(TokenInstance.address, false, { from: owner });
+        await StakingInstance.withdraw(TokenInstance.address, amount, { from: account1 })
+        const storedData = await TokenInstance.balanceOf.call(account1, { from: account1 });
+        expect(storedData).to.be.bignumber.equal(new BN(amount));
+      });
+
+      it("WITHDRAW : Staker should be able to withdraw and userStorage.stakedAmount=0", async function () {
+        await StakingInstance.setPoolPaused(TokenInstance.address, false, { from: owner });
+        await StakingInstance.withdraw(TokenInstance.address, amount, { from: account1 })
+        const storedData = await StakingInstance.userInfo.call(TokenInstance.address, account1, { from: account1 });
+        expect(storedData.stakedAmount).to.be.bignumber.equal(new BN(0));
+      });
+
+      it("WITHDRAW : Staker should be able to withdraw and userStorage.lastStakedTimestamp should be increase", async function () {
+        //console.log("OLD TIMESTAMP ============= " + firstDepositTimestamp.lastStakedTimestamp);
+        let duration = time.duration.seconds(3);
+        await time.increase(duration);
+        await StakingInstance.setPoolPaused(TokenInstance.address, false, { from: owner });
+        await StakingInstance.deposit(500, TokenInstance.address, { from: account2 });
+        await StakingInstance.withdraw(TokenInstance.address, amount, { from: account1 })
+        const storedData = await StakingInstance.userInfo.call(TokenInstance.address, account1, { from: account1 });
+        //console.log("NEW TIMESTAMP ============= " + storedData.lastStakedTimestamp);
+        expect(storedData.lastStakedTimestamp).to.be.bignumber.above(new BN(firstDepositTimestamp.lastStakedTimestamp));
+      });
+
+      it("WITHDRAW : Staker should be able to withdraw and poolStorage.totalValueLocked decrease by the withdraw value", async function () {
+        await StakingInstance.setPoolPaused(TokenInstance.address, false, { from: owner });
+        await StakingInstance.withdraw(TokenInstance.address, amount, { from: account1 })
+        const storedData = await StakingInstance.poolData.call(TokenInstance.address, { from: account1 });
+        expect(storedData.totalValueLocked).to.be.bignumber.equal(new BN(500));
+      });
+
+      it("Check Emit : Withdrawn", async () => {
+        await StakingInstance.setPoolPaused(TokenInstance.address, false, { from: owner });
+        const findEvent = await StakingInstance.withdraw(TokenInstance.address, amount, { from: account1 });
+        expectEvent(findEvent, "Withdrawn", {sender: account1, tokenAddress: TokenInstance.address, amountWithdraw: new BN(amount)});
+      });
+    });
 
 });
