@@ -6,14 +6,48 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
+import "./IVaultStaking.sol";
+
 contract Staking is Ownable {
 
     //using SafeERC20 for IERC20; //https://docs.openzeppelin.com/contracts/4.x/api/token/erc20#SafeERC20
 
     IERC20 private rewardToken;
+    IVaultStaking private myVault;
+    address private immutable vaultAddress;
+
+    constructor (IERC20 _rewardToken, address _vaultAddress) {
+        rewardToken = _rewardToken;
+        myVault = IVaultStaking(_vaultAddress);
+        vaultAddress = _vaultAddress;
+    }
+
+    function unlockVault() external onlyOwner {
+        myVault.unlock();
+    }
+
+    function transferVaultOwner(address _address) external onlyOwner {
+        myVault.transferOwnership(_address);
+    }
+
+   function lockVault() external onlyOwner {
+        myVault.lock();
+    }
+
+    function withdrawFromVault(address _tokenAddress, uint256 _amount) external onlyOwner {
+        myVault.withdrawToken(_tokenAddress, _amount);
+    }
+
+    function sendBackToVault(address _tokenAddress, uint256 _amount) external onlyOwner {
+        IERC20(_tokenAddress).transfer(vaultAddress, _amount);
+    }
+
+    function getMyVault() external view returns(address) {
+        return(vaultAddress);
+    }
 
     // decimal defnit pour le calcul des rewards
-    uint rewardDecimal = 1e18; // for testing 1e15 vs production 1e18
+    uint256 rewardDecimal = 1e18; // for testing 1e15 vs production 1e18
 
     struct UserInfo {
         uint256 stakedAmount; 
@@ -42,10 +76,6 @@ contract Staking is Ownable {
     event Withdrawn (address receiver, address tokenAddress, uint256 amountWithdraw);
     event Claimed (address receiver, address tokenAddress, uint rewardClaimedAmount);
     event PausedPoolStatus (address tokenAddress, bool pausedStatus);
-
-    constructor (IERC20 _rewardToken) {
-        rewardToken = _rewardToken;
-    }
 
     function createLiquidityPool(address _tokenAddress, uint256 _apr, uint256 _fees, uint256 _minimumClaim, string calldata _symbol) external onlyOwner {
         require(!poolData[_tokenAddress].isCreated, "This pool is already created");
@@ -171,7 +201,7 @@ contract Staking is Ownable {
 
 // DEBUG FUNCTIONS
 
-    function displayStakingDuration(address _tokenAddress, address _user) public view returns (uint256) {
+ /*   function displayStakingDuration(address _tokenAddress, address _user) public view returns (uint256) {
         UserInfo storage userStorage = userInfo[_tokenAddress][_user];
         uint256 stakingDuration = block.timestamp - userStorage.lastStakedTimestamp; // not ideal cause latency but it is ok
         return stakingDuration;
@@ -193,5 +223,5 @@ contract Staking is Ownable {
         uint256 feesAmount = ((amountRewards * poolStorage.fees) / 100);
         return feesAmount;
     }
-
+*/
 }
