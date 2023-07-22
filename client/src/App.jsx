@@ -7,6 +7,7 @@ import Home from "./components/Home";
 import Eva from "./components/Eva";
 import Staking from "./components/Staking";
 import Token from "./components/Token";
+import Admin from "./components/Admin";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/eva" element={<Eva />} />
             <Route path="/staking" element={<Staking />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="/token" element={<Token />} />
         </Routes>
 

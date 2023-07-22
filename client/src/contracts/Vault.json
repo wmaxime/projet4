@@ -68,7 +68,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [],
@@ -81,7 +82,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [],
@@ -4470,9 +4472,80 @@
     "name": "solc",
     "version": "0.8.18+commit.87f61d96.Emscripten.clang"
   },
-  "networks": {},
+  "networks": {
+    "1690037920557": {
+      "events": {},
+      "links": {},
+      "address": "0x1AF97f11C7A8C63B090a58dffBa4cB8EF31720c0",
+      "transactionHash": "0x844197e314ab363346409c54378f6e6b81ed3d6ed96e8755b5de6aa0e44ed2fe"
+    },
+    "1690039431770": {
+      "events": {
+        "0x0f2e5b6c72c6a4491efd919a9f9a409f324ef0708c11ee57d410c2cb06c0992b": {
+          "anonymous": false,
+          "inputs": [],
+          "name": "Locked",
+          "type": "event"
+        },
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event"
+        },
+        "0x19aad37188a1d3921e29eb3c66acf43d81975e107cb650d58cca878627955fd6": {
+          "anonymous": false,
+          "inputs": [],
+          "name": "Unlocked",
+          "type": "event"
+        },
+        "0x037238854fe57fbf51f09946f854fc3916fe83938d6521f09bd05463839f1304": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "receiver",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "token",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "name": "WithdrawToken",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0x6042a59dD8F028210311E7d8adF3B203d6fEF5D0",
+      "transactionHash": "0x5d2165226e87a36ec78a4cd4d068fb3b4d24664b7eb8f7459bd632a8555ff2f3"
+    }
+  },
   "schemaVersion": "3.4.14",
-  "updatedAt": "2023-07-22T14:55:16.726Z",
+  "updatedAt": "2023-07-22T15:49:34.813Z",
+  "networkType": "ethereum",
   "devdoc": {
     "events": {
       "WithdrawToken(address,address,uint256)": {
