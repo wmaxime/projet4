@@ -1,0 +1,557 @@
+{
+  "contractName": "IVaultStaking",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [],
+      "name": "Locked",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [],
+      "name": "Unlocked",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "receiver",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "WithdrawToken",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "lock",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "unlock",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "withdrawToken",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.8.18+commit.87f61d96\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[],\"name\":\"Locked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[],\"name\":\"Unlocked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"WithdrawToken\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"lock\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"unlock\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"withdrawToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"events\":{\"WithdrawToken(address,address,uint256)\":{\"params\":{\"amount\":\"uint256 - token amount\",\"receiver\":\"address - Receiver of token\",\"token\":\"address - Token address\"}}},\"kind\":\"dev\",\"methods\":{\"withdrawToken(address,uint256)\":{\"params\":{\"amount\":\"uint256 - Amount of token to withdraw\",\"token\":\"address - Token to withdraw\"}}},\"version\":1},\"userdoc\":{\"events\":{\"Locked()\":{\"notice\":\"Emitted on vault lock\"},\"Unlocked()\":{\"notice\":\"Emitted on vault unlock\"},\"WithdrawToken(address,address,uint256)\":{\"notice\":\"Emitted on token withdrawal\"}},\"kind\":\"user\",\"methods\":{\"lock()\":{\"notice\":\"Locks the vault\"},\"unlock()\":{\"notice\":\"Unlocks the vault\"},\"withdrawToken(address,uint256)\":{\"notice\":\"Withdraws token stores at the contract\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/IVaultStaking.sol\":\"IVaultStaking\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/IVaultStaking.sol\":{\"keccak256\":\"0x747742fdfc25285502293f9a55061bba6d568ed6131462f75c295d65b4725d83\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://644b6a266e7b345b16a063630b878295e475b7be16e5a8b28d56204b49d62ce8\",\"dweb:/ipfs/QmTZCU8GYrEr6x47vpGooahCfRAcUhnCKh8W8VY8aSeXRe\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.18;\n\ninterface IVaultStaking {\n    /**\n     * Emitted on vault lock\n     */\n    event Locked();\n\n    /**\n     * Emitted on vault unlock\n     */\n    event Unlocked();\n\n    /**\n     * Emitted on token withdrawal\n     *\n     * @param receiver address - Receiver of token\n     * @param token address - Token address\n     * @param amount uint256 - token amount\n     */\n    event WithdrawToken(address receiver, address token, uint256 amount);\n\n    /**\n     * Locks the vault\n     */\n    function lock() external;\n\n    /**\n     * Unlocks the vault\n     */\n    function unlock() external;\n\n    /**\n     * Withdraws token stores at the contract\n     *\n     * @param token address - Token to withdraw\n     * @param amount uint256 - Amount of token to withdraw\n     */\n    function withdrawToken(address token, uint256 amount) external;\n\n    function transferOwnership(address newOwner) external;\n}",
+  "sourcePath": "/home/adm-linux/projet4/truffle/contracts/IVaultStaking.sol",
+  "ast": {
+    "absolutePath": "project:/contracts/IVaultStaking.sol",
+    "exportedSymbols": {
+      "IVaultStaking": [
+        1846
+      ]
+    },
+    "id": 1847,
+    "license": "MIT",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1809,
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".18"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "32:24:12"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "IVaultStaking",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "fullyImplemented": false,
+        "id": 1846,
+        "linearizedBaseContracts": [
+          1846
+        ],
+        "name": "IVaultStaking",
+        "nameLocation": "68:13:12",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "anonymous": false,
+            "documentation": {
+              "id": 1810,
+              "nodeType": "StructuredDocumentation",
+              "src": "88:40:12",
+              "text": " Emitted on vault lock"
+            },
+            "eventSelector": "0f2e5b6c72c6a4491efd919a9f9a409f324ef0708c11ee57d410c2cb06c0992b",
+            "id": 1812,
+            "name": "Locked",
+            "nameLocation": "139:6:12",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 1811,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "145:2:12"
+            },
+            "src": "133:15:12"
+          },
+          {
+            "anonymous": false,
+            "documentation": {
+              "id": 1813,
+              "nodeType": "StructuredDocumentation",
+              "src": "154:42:12",
+              "text": " Emitted on vault unlock"
+            },
+            "eventSelector": "19aad37188a1d3921e29eb3c66acf43d81975e107cb650d58cca878627955fd6",
+            "id": 1815,
+            "name": "Unlocked",
+            "nameLocation": "207:8:12",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 1814,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "215:2:12"
+            },
+            "src": "201:17:12"
+          },
+          {
+            "anonymous": false,
+            "documentation": {
+              "id": 1816,
+              "nodeType": "StructuredDocumentation",
+              "src": "224:192:12",
+              "text": " Emitted on token withdrawal\n @param receiver address - Receiver of token\n @param token address - Token address\n @param amount uint256 - token amount"
+            },
+            "eventSelector": "037238854fe57fbf51f09946f854fc3916fe83938d6521f09bd05463839f1304",
+            "id": 1824,
+            "name": "WithdrawToken",
+            "nameLocation": "427:13:12",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 1823,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1818,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "receiver",
+                  "nameLocation": "449:8:12",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1824,
+                  "src": "441:16:12",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1817,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "441:7:12",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1820,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "token",
+                  "nameLocation": "467:5:12",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1824,
+                  "src": "459:13:12",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1819,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "459:7:12",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1822,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "amount",
+                  "nameLocation": "482:6:12",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1824,
+                  "src": "474:14:12",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1821,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "474:7:12",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "440:49:12"
+            },
+            "src": "421:69:12"
+          },
+          {
+            "documentation": {
+              "id": 1825,
+              "nodeType": "StructuredDocumentation",
+              "src": "496:34:12",
+              "text": " Locks the vault"
+            },
+            "functionSelector": "f83d08ba",
+            "id": 1828,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "lock",
+            "nameLocation": "544:4:12",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1826,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "548:2:12"
+            },
+            "returnParameters": {
+              "id": 1827,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "559:0:12"
+            },
+            "scope": 1846,
+            "src": "535:25:12",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 1829,
+              "nodeType": "StructuredDocumentation",
+              "src": "566:36:12",
+              "text": " Unlocks the vault"
+            },
+            "functionSelector": "a69df4b5",
+            "id": 1832,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "unlock",
+            "nameLocation": "616:6:12",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1830,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "622:2:12"
+            },
+            "returnParameters": {
+              "id": 1831,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "633:0:12"
+            },
+            "scope": 1846,
+            "src": "607:27:12",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 1833,
+              "nodeType": "StructuredDocumentation",
+              "src": "640:171:12",
+              "text": " Withdraws token stores at the contract\n @param token address - Token to withdraw\n @param amount uint256 - Amount of token to withdraw"
+            },
+            "functionSelector": "9e281a98",
+            "id": 1840,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "withdrawToken",
+            "nameLocation": "825:13:12",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1838,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1835,
+                  "mutability": "mutable",
+                  "name": "token",
+                  "nameLocation": "847:5:12",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1840,
+                  "src": "839:13:12",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1834,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "839:7:12",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1837,
+                  "mutability": "mutable",
+                  "name": "amount",
+                  "nameLocation": "862:6:12",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1840,
+                  "src": "854:14:12",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1836,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "854:7:12",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "838:31:12"
+            },
+            "returnParameters": {
+              "id": 1839,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "878:0:12"
+            },
+            "scope": 1846,
+            "src": "816:63:12",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "functionSelector": "f2fde38b",
+            "id": 1845,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "transferOwnership",
+            "nameLocation": "894:17:12",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1843,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1842,
+                  "mutability": "mutable",
+                  "name": "newOwner",
+                  "nameLocation": "920:8:12",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1845,
+                  "src": "912:16:12",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1841,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "912:7:12",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "911:18:12"
+            },
+            "returnParameters": {
+              "id": 1844,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "938:0:12"
+            },
+            "scope": 1846,
+            "src": "885:54:12",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 1847,
+        "src": "58:883:12",
+        "usedErrors": []
+      }
+    ],
+    "src": "32:909:12"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.8.18+commit.87f61d96.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.4.14",
+  "updatedAt": "2023-07-22T14:55:16.696Z",
+  "devdoc": {
+    "events": {
+      "WithdrawToken(address,address,uint256)": {
+        "params": {
+          "amount": "uint256 - token amount",
+          "receiver": "address - Receiver of token",
+          "token": "address - Token address"
+        }
+      }
+    },
+    "kind": "dev",
+    "methods": {
+      "withdrawToken(address,uint256)": {
+        "params": {
+          "amount": "uint256 - Amount of token to withdraw",
+          "token": "address - Token to withdraw"
+        }
+      }
+    },
+    "version": 1
+  },
+  "userdoc": {
+    "events": {
+      "Locked()": {
+        "notice": "Emitted on vault lock"
+      },
+      "Unlocked()": {
+        "notice": "Emitted on vault unlock"
+      },
+      "WithdrawToken(address,address,uint256)": {
+        "notice": "Emitted on token withdrawal"
+      }
+    },
+    "kind": "user",
+    "methods": {
+      "lock()": {
+        "notice": "Locks the vault"
+      },
+      "unlock()": {
+        "notice": "Unlocks the vault"
+      },
+      "withdrawToken(address,uint256)": {
+        "notice": "Withdraws token stores at the contract"
+      }
+    },
+    "version": 1
+  }
+}

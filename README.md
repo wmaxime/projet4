@@ -12,3 +12,6 @@
   - Main (read wallet, staking, history...)
   - footer (Copyright, infos..)
 
+# IMPLEMENTATION
+
+- 
