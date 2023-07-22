@@ -20,9 +20,17 @@ function EthProvider({ children }) {
         } catch (err) {
           console.error(err);
         }
+
+        // Recupere le Owner, ne pas oublier de le rajouter dans le DISPATCH
+        let contractOwner = await contract.methods.owner().call();
+        const isOwner = contractOwner === accounts[0];
+
+        // current user
+        const user = accounts[0];
+
         dispatch({
           type: actions.init,
-          data: { artifact, web3, accounts, networkID, contract }
+          data: { artifact, web3, accounts, networkID, contract, isOwner, user }
         });
       }
     }, []);

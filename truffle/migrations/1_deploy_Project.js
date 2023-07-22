@@ -8,6 +8,6 @@ module.exports = async function (deployer) {
 
     const token = await EVCT.deployed();
     const vault = await Vault.deployed();
-    console.log("ADRESS VAULT ============== " + vault.address);
+    //console.log("ADRESS VAULT ============== " + vault.address);
     await deployer.deploy(Staking, token.address, vault.address);
 };
