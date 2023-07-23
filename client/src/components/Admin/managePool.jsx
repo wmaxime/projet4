@@ -31,7 +31,7 @@ function ManagePool() {
     const boolStatus = (poolStatus.toLowerCase() === "true");
     //console.log("Pause value =================== " + boolStatus);
     await contract.methods.setPoolPaused(tokenAddress, boolStatus).send({ from: accounts[0] });
-    //window.location.reload(true);
+    window.location.reload(true);
   }
 
   return (
@@ -55,7 +55,6 @@ function ManagePool() {
               </Select>
               <br></br>
               <FormControl id="name" float="right">
-                {/* <Button variant="solid" bg="#0D74FF" color="white" _hover={{}} onClick={OnClickCreatePool}> Create */}
                 <Button colorScheme='blue' onClick={OnClickUnlockPool}> Change
                 </Button>
               </FormControl></form>

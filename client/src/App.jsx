@@ -8,6 +8,7 @@ import Eva from "./components/Eva";
 import Staking from "./components/Staking";
 import Token from "./components/Token";
 import Admin from "./components/Admin";
+import MyStakingPlan from "./components/StakingPlan";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
             <Route path="/staking" element={<Staking />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/token" element={<Token />} />
+            <Route path="/mystakingplan" element={<MyStakingPlan />} />
         </Routes>
         <Footer />
       </div>

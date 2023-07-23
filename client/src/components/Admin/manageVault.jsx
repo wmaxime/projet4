@@ -11,17 +11,16 @@ function ManageVault() {
     async function getVault() {
         const vault = await contract.methods.getMyVault().call({ from: accounts[0] });
         setVaultAddress(vault);
-        //alert("vaultAddress : " + vault);
-        //console.log("VAULT ADRESS ============ " + vault);
     }
 
     getVault();
 
   }, [contract, accounts])
 
+  console.log("VAULT ADRESS ============ " + vaultAddress);
 
   return (
-<main>VAULT MANAGEMENT</main>
+    <main>VAULT MANAGEMENT</main>
   );
 }
 

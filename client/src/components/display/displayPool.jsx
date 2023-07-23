@@ -42,7 +42,7 @@ function DisplayPool() {
 
   }, [contract, accounts])
 
-//  console.log(listePools);
+//  console.log(listePools[0]);
 //  console.log(listePools.length);
 
   return (
