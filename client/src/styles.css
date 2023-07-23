@@ -153,3 +153,32 @@ hr {
   display: inline-block;
   margin: 2rem 1rem 0 0;
 }
+
+.liste td {
+  border-color:grey;
+  border-style:solid;
+  border-width:1px;
+  font-size:14px;
+  overflow:hidden;
+  padding:10px 5px;
+  word-break:normal;
+}
+.liste th {
+  padding: 10px;
+  border: 1px solid grey;
+  color:#ffffff;
+  border-collapse: collapse;
+  background-color:#48BB78;
+  text-align:center;
+}
+
+.liste .th-titre {
+  background-color:#3166ff;
+  color:#ffffff;
+  text-align:center;
+  vertical-align:top
+}
+.liste .td-addr {
+  background-color:#c9d4f5;
+  text-align: center;
+}

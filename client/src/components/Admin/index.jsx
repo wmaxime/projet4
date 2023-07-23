@@ -1,6 +1,6 @@
 import useEth from "../../contexts/EthContext/useEth";
 import { useState } from "react";
-import DisplayStakingPlan from "../display/displayStakingPlan";
+import DisplayPool from "../display/displayPool";
 import {Box, Heading, Button, Stack} from '@chakra-ui/react';
 import CreatePool from "./createPool";
 
@@ -58,7 +58,7 @@ function Admin() {
     <div><center><p>
       {isOwner
         ? <div>
-          <Heading as="h1" fontSize="4xl">Gestion Staking</Heading><Menu />
+          <Heading as="h1" fontSize="4xl">Staking Management</Heading><Menu />
           </div>
         : ''
       }
@@ -67,7 +67,7 @@ function Admin() {
         ? <CreatePool /> : <p></p>
       }
       {displayPools === true
-        ? <DisplayStakingPlan /> : <p></p>
+        ? <DisplayPool /> : <p></p>
       }
       
 
