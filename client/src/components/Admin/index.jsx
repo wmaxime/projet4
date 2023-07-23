@@ -3,6 +3,8 @@ import { useState } from "react";
 import DisplayPool from "../display/displayPool";
 import {Box, Heading, Button, Stack} from '@chakra-ui/react';
 import CreatePool from "./createPool";
+import ManagePool from "./managePool";
+import ManageVault from "./manageVault";
 
 function Admin() {
   const { state: { isOwner } } = useEth();
@@ -69,8 +71,12 @@ function Admin() {
       {displayPools === true
         ? <DisplayPool /> : <p></p>
       }
-      
-
+       {managePoolStatus === true
+        ? <ManagePool /> : <p></p>
+      }
+       {manageVault === true
+        ? <ManageVault /> : <p></p>
+      }
       <p></p>
     </div>
   );

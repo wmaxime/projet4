@@ -1,6 +1,6 @@
 import useEth from "../../contexts/EthContext/useEth";
 import { useState } from "react";
-import {Box, Button, VStack, WrapItem, FormControl, FormLabel, Input, InputGroup, useToast } from '@chakra-ui/react';
+import {Box, Button, VStack, WrapItem, FormControl, FormLabel, Input, InputGroup } from '@chakra-ui/react';
 
 function CreatePool() {
     const { state: { accounts, contract } } = useEth();

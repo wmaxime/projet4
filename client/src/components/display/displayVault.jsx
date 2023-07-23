@@ -2,48 +2,19 @@ import useEth from "../../contexts/EthContext/useEth";
 import { useEffect, useState } from "react";
 import {TableContainer, Thead, Table, Tr, Th, Td, Tbody, Center} from '@chakra-ui/react';
 
-function DisplayPool() {
+function DisplayVault() {
   const { state: { contract, accounts } } = useEth();
-  const [listePools, setListePools] = useState([]);
 
   // Recuperation des events
   useEffect (() => {
-    async function getListePools() {
-      // recuperation depuis les events
-      const ListePoolsEvent = await contract.getPastEvents(
-        "PoolCreated",
-        {
-          fromBlock: 0,
-          toBlock: "latest",
-        }
-      );
-
-      let poolsTokenAddress = ListePoolsEvent.map((address) => address.returnValues.tokenAddress);
-      
-      let arrPools = [];
-      for (const pta of poolsTokenAddress) {
-          const data = await contract.methods.getPoolData(pta).call({ from: accounts[0] });
-          arrPools.push({
-            id: pta,
-            address: pta,
-            symbol: data.symbol,
-            apr: data.apr,
-            fees: data.fees,
-            minimumClaim: data.minimumClaim,
-            paused: data.paused.toString(),
-            totalValueLocked: data.totalValueLocked
-          });
-      }
-
-      setListePools(arrPools);
+    async function getVault() {
+        const vaultAddress = await contract.methods.getMyVault().call({ from: accounts[0] });
+        alert("vaultAddress : ${vaultAddress}");
+        console.log("VAULT ADRESS ============ " + vaultAddress);
     }
-
-    getListePools();
 
   }, [contract, accounts])
 
-//  console.log(listePools);
-//  console.log(listePools.length);
 
   return (
     <div className="App"><Center>
@@ -79,4 +50,4 @@ function DisplayPool() {
   );
 }
 
-export default DisplayPool;
+export default DisplayVault;

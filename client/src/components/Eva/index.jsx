@@ -2,7 +2,7 @@
 function Eva() {
     return (
       <main>
-        <p>Welcome EVA</p>
+        <p>Welcome EVA CARD</p>
       </main>
     );
   }

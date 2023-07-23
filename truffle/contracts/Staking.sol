@@ -42,7 +42,7 @@ contract Staking is Ownable {
         IERC20(_tokenAddress).transfer(vaultAddress, _amount);
     }
 
-    function getMyVault() external view returns(address) {
+    function getMyVault() external onlyOwner view returns(address) {
         return(vaultAddress);
     }
 
