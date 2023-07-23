@@ -34,13 +34,6 @@ function Admin() {
     setDisplayPools(false);
   }
 
-  const ClickDisplayPool = async (event) => {
-    setDisplayPools(true);
-    setCreatePoolStatus(false);
-    setManagePoolStatus(false);
-    setManageVault(false);
-  }
-
   function Menu() {
     return (
     <Box py={12}>
@@ -48,13 +41,10 @@ function Admin() {
       <Button colorScheme='whatsapp' onClick={ClickOnCreatePool}>Create Pool</Button>
       <Button colorScheme='whatsapp' onClick={ClickOnManagePool}>Manage Pools</Button>
       <Button colorScheme='whatsapp' onClick={ClickManageVault}>Manage Vault</Button>
-      <Button colorScheme='whatsapp' onClick={ClickDisplayPool}>Display Pools</Button>
       </Stack>
     </Box>
     );
   }
-
- // console.log("CREATE POOL STATUS ========= " + createPoolStatus);
 
   return (
     <div><center><p>

@@ -1,9 +1,7 @@
 import React from "react";
-//import DisplayStakingPlan from "../display/displayStakingPlan";
-//import GetPoolInfo from "../utils/getPoolInfo";
+//import Web3 from 'web3';
 import {Box, Center, Text, Stack, List, ListItem, ListIcon, Button, useColorModeValue, VStack, FormControl, FormLabel, Input,InputGroup } from '@chakra-ui/react';
 import { FaCheckCircle } from 'react-icons/fa';
-
 import useEth from "../../contexts/EthContext/useEth";
 import { useEffect, useState } from "react";
 
@@ -17,6 +15,7 @@ function MyStakingPlan() {
   const [userBalancelEVCT, setUserBalanceEVCT] = useState();
   const [userRewards, setUserRewards] = useState();
   const [amountToStake, setAmountToStake] = useState();
+  const [contractAddress, setContractAddress] = useState(contract.options.address);
   
 
   useEffect (() => {
@@ -60,17 +59,16 @@ function MyStakingPlan() {
     }
 
     getListePools();
+    setContractAddress(contract.options.address);
 
   }, [contract, accounts])
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    // 👇️ clear all input values in the form
     event.target.reset();
   }
 
   const OnClickStake = async (event) => {
-    // alert(`apr: ${apr} & fees: ${fees}`);
     if (amountToStake === "") {
         alert("Please enter an amount to stake !");
         window.location.reload(false);
@@ -84,6 +82,11 @@ function MyStakingPlan() {
     
     await contract.methods.deposit(amountToStake, addressEVCT).send({ from: accounts[0] });
     window.location.reload(true);
+  }
+
+  const OnClickApprove = async (event) => {
+      const res = await contract.methods.approveEVCT(addressEVCT, 9999999999).send({ from: accounts[0] });
+      console.log("APPROVE RESULT ======================> " + res);
   }
 
   return (
@@ -152,7 +155,9 @@ function MyStakingPlan() {
                 </Button>
               </FormControl></form>
             </VStack>
-
+            <Button mt={10} w={'full'} bg={'green.400'} color={'white'} rounded={'xl'} boxShadow={'0 5px 20px 0px rgb(72 187 120 / 43%)'} _hover={{ bg: 'green.500', }} _focus={{ bg: 'green.500', }} onClick={OnClickApprove}>
+                 Approve
+            </Button>
         </Box>
       </Box>
     </Center>

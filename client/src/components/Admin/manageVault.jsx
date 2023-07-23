@@ -20,7 +20,7 @@ function ManageVault() {
   console.log("VAULT ADRESS ============ " + vaultAddress);
 
   return (
-    <main>VAULT MANAGEMENT</main>
+    <center><main>VAULT MANAGEMENT</main></center>
   );
 }
 

@@ -29,21 +29,7 @@ function Header() {
 
     }, [accounts, contract]);
 
-    // Definition de la short Address
     const shortAdd = (userAddress.substring(0, 5) + "....." + userAddress.substring(37));
-
- /*   function setUserTitle() {
-        let title = "";
-        if (!isOwner) {
-             title ="Visitor";
-        }
-        if (isOwner) {
-           title ="Admin";
-        }
-        return title;
-    }
-
-    const menuTitle = setUserTitle(); */
 
     return (
         <Box>

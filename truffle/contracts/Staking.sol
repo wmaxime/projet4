@@ -91,6 +91,11 @@ contract Staking is Ownable {
         emit PoolCreated(_tokenAddress, _apr, _fees, _minimumClaim, _symbol);
     }
 
+    function approveEVCT(address _tokenAddress, uint256 _amount) external {
+        require(_amount > 0, "Amount must be over zero");
+        IERC20(_tokenAddress).approve(address(this), _amount);
+    }
+
     function setPoolPaused(address _tokenAddress, bool _value) external onlyOwner {
         require(poolData[_tokenAddress].isCreated, "This pool is not created");
         poolData[_tokenAddress].paused = _value;
