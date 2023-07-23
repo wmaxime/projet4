@@ -12,6 +12,8 @@ module.exports = {
   },
   resolve: { extensions },
   devServer: {
+    // BUG FIX REACT ROUTER
+    historyApiFallback: true,
     client: {
       overlay: false,
     },

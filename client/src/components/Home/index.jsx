@@ -63,7 +63,7 @@ function Home() {
               }}>
               Get Started
             </Button></NavLink>
-            <NavLink to="/token"><Button variant={'link'} colorScheme={'blue'} size={'sm'}>
+            <NavLink to="/eva"><Button variant={'link'} colorScheme={'blue'} size={'sm'}>
               Learn more
             </Button></NavLink>
             <Box>

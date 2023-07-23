@@ -1,7 +1,7 @@
 import React from "react";
 import useEth from "../../contexts/EthContext/useEth";
 import { useState, useEffect } from "react";
-import { Center, Box, Tabs, TabList, Tab } from '@chakra-ui/react';
+import { Box, Tabs, TabList, Tab } from '@chakra-ui/react';
 import { NavLink } from 'react-router-dom';
 
 function Header() {
@@ -32,7 +32,7 @@ function Header() {
     // Definition de la short Address
     const shortAdd = (userAddress.substring(0, 5) + "....." + userAddress.substring(37));
 
-    function setUserTitle() {
+ /*   function setUserTitle() {
         let title = "";
         if (!isOwner) {
              title ="Visitor";
@@ -43,27 +43,28 @@ function Header() {
         return title;
     }
 
-    const menuTitle = setUserTitle();
+    const menuTitle = setUserTitle(); */
 
     return (
         <Box>
-            <Center>
-            <Tabs variant='unstyled'>
+            <Tabs variant='unstyled' align="center">
                 <TabList>
                 <NavLink to="/"><Tab _selected={{ color: 'white', bg: 'blue.500' }}>Home</Tab></NavLink>
-                <NavLink to="/eva"><Tab _selected={{ color: 'white', bg: 'green.400' }}>Token</Tab></NavLink>
+                <NavLink to="/eva"><Tab _selected={{ color: 'white', bg: 'green.400' }}>Eva Card</Tab></NavLink>
                 <NavLink to="/staking"><Tab _selected={{ color: 'white', bg: 'green.400' }}>Staking</Tab></NavLink>
-                <NavLink to="/admin"><Tab _selected={{ color: 'white', bg: 'green.400' }}>Admin</Tab></NavLink>
 
-                {shortAdd
-                    ? <Tab _selected={{ color: 'white', bg: 'green.400'}}>{shortAdd}</Tab>
+                {isOwner
+                    ? <NavLink to="/admin"><Tab _selected={{ color: 'white', bg: 'green.400' }}>Admin</Tab></NavLink>
+                    : <Tab></Tab>
+                }
+                &emsp;&emsp;&emsp;
+                {shortAdd && isOwner
+                    ? <Tab bg="RED" align="end">{shortAdd}</Tab>
                     : <Tab _selected={{ color: 'white', bg: 'green.400' }}>Connect</Tab>
                 }
                 </TabList>
             </Tabs>
-            </Center>
         </Box>
- 
     );
   }
   

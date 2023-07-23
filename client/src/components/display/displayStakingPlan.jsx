@@ -1,10 +1,10 @@
 import useEth from "../../contexts/EthContext/useEth";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import {Box, Heading, Text, VStack} from '@chakra-ui/react';
 
 function DisplayStakingPlan() {
   const { state: { contract, accounts } } = useEth();
-  const [ListProposals, setListProposals] = useState([]);
+  //const [ListProposals, setListProposals] = useState([]);
 
   // Recuperation des events
   useEffect (() => {
@@ -32,15 +32,13 @@ function DisplayStakingPlan() {
           });
       }
       
-      setListProposals(arrProposals);
+      //setListProposals(arrProposals);
     }
 
     getListProposals();
 
   }, [contract, accounts])
 
-  //console.log(ListProposals);
-  //console.log(ListProposals.length);
 
   return (
  

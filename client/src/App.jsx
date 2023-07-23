@@ -15,7 +15,6 @@ function App() {
       <ChakraProvider>
         <div>
         <Header />
-
         <Routes>
             <Route path="*" element={<di>404</di>} />
             <Route path="/" element={<Home />} />
@@ -24,7 +23,6 @@ function App() {
             <Route path="/admin" element={<Admin />} />
             <Route path="/token" element={<Token />} />
         </Routes>
-
         <Footer />
       </div>
       </ChakraProvider>
