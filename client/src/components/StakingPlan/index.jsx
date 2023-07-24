@@ -1,5 +1,5 @@
 import React from "react";
-//import Web3 from 'web3';
+import web3js from "web3";
 import {Box, Center, Text, Stack, List, ListItem, ListIcon, Button, useColorModeValue, VStack, FormControl, FormLabel, Input,InputGroup } from '@chakra-ui/react';
 import { FaCheckCircle } from 'react-icons/fa';
 import useEth from "../../contexts/EthContext/useEth";
@@ -15,8 +15,6 @@ function MyStakingPlan() {
   const [userBalancelEVCT, setUserBalanceEVCT] = useState();
   const [userRewards, setUserRewards] = useState();
   const [amountToStake, setAmountToStake] = useState();
-  const [contractAddress, setContractAddress] = useState(contract.options.address);
-  
 
   useEffect (() => {
     async function getListePools() {
@@ -55,11 +53,19 @@ function MyStakingPlan() {
       const userInfo = await contract.methods.userInfo(findEVCT.address, accounts[0]).call({ from: accounts[0] });
       setUserBalanceEVCT(userInfo.stakedAmount);
       const userRewards = await contract.methods.calculateReward(findEVCT.address, accounts[0]).call({ from: accounts[0] });
-      setUserRewards(userRewards);
+      const decimalRewards = parseFloat(web3js.utils.fromWei(userRewards)).toFixed(1);
+      //console.log( "VALUE =================== " +  parseFloat(toto).toFixed(1) );
+      //console.log("TYPEOF =================== " + typeof toto);
+      //console.log("VALUE DECIMAL ============ " + decimalRewards);
+      if ( decimalRewards === "0.0") {
+        setUserRewards("0");
+      } else {
+        setUserRewards(decimalRewards);
+      };
+
     }
 
     getListePools();
-    setContractAddress(contract.options.address);
 
   }, [contract, accounts])
 
@@ -84,15 +90,37 @@ function MyStakingPlan() {
     window.location.reload(true);
   }
 
-  const OnClickApprove = async (event) => {
+  const ModalOnClickUnStake = async (event) => {
+    if (amountToStake === "") {
+        alert("Please enter an amount to unstake !");
+        window.location.reload(false);
+        return;
+    }
+    alert(amountToStake);
+    await contract.methods.withdraw(addressEVCT, amountToStake).send({ from: accounts[0] });
+    window.location.reload(true);
+  }
+
+  const OnClickClaim = async (event) => {
+    if (userRewards === "") {
+        alert("No rewards to claim !");
+        window.location.reload(false);
+        return;
+    }
+
+    await contract.methods.claimReward(addressEVCT).send({ from: accounts[0] });
+    window.location.reload(true);
+  }
+
+/*  const OnClickApprove = async (event) => {
       const res = await contract.methods.approveEVCT(addressEVCT, 9999999999).send({ from: accounts[0] });
       console.log("APPROVE RESULT ======================> " + res);
-  }
+  } */
 
   return (
 <Center py={6}>
       <Box
-        maxW={'330px'}
+        maxW={'350'}
         w={'full'}
         bg={useColorModeValue('white', 'gray.800')}
         boxShadow={'2xl'}
@@ -103,30 +131,20 @@ function MyStakingPlan() {
           p={6}
           color={useColorModeValue('gray.800', 'white')}
           align={'center'}>
-          <Text
-            fontSize={'sm'}
-            fontWeight={500}
-            bg={useColorModeValue('green.50', 'green.900')}
-            p={2}
-            px={3}
-            color={'green.500'}
-            rounded={'full'}>
-            EVCT Token
-          </Text>
           <Stack direction={'row'} align={'center'} justify={'center'}>
-            <Text fontSize={'3xl'}>Rewards : </Text>
-            <Text fontSize={'6xl'} fontWeight={800}>
+            <Text fontSize={'3xl'} > Rewards : </Text>
+            <Text fontSize={'6xl'} fontWeight={600}>
               {userRewards}
             </Text>
             <Text color={'gray.500'}>{symbolEVCT}</Text>
           </Stack>
         </Stack>
 
-        <Box bg={useColorModeValue('gray.50', 'gray.900')} px={6} py={10}>
+        <Box bg={useColorModeValue('gray.50', 'gray.900')} px={6} py={10} >
           <List spacing={3}>
             <ListItem>
               <ListIcon as={FaCheckCircle} color="green.400" />
-              Your Balance : {userBalancelEVCT}
+              Your Staking Balance : {userBalancelEVCT} EVCT
             </ListItem>
             <ListItem>
               <ListIcon as={FaCheckCircle} color="green.400" />
@@ -144,9 +162,9 @@ function MyStakingPlan() {
           <br></br>
           <VStack spacing={5}><form onSubmit={handleSubmit}>
               <FormControl id="name">
-                <FormLabel>Amount to Stake</FormLabel>
+                <FormLabel>Amount</FormLabel>
                 <InputGroup borderColor="#E0E1E7">
-                  <Input type="text" placeholder="less than in your Wallet" size="md" onChange={event => setAmountToStake(event.currentTarget.value)} />
+                  <Input type="text" placeholder="0" size="md" onChange={event => setAmountToStake(event.currentTarget.value)} />
                 </InputGroup>
               </FormControl>
               <FormControl id="name" float="right">
@@ -154,10 +172,13 @@ function MyStakingPlan() {
                  Stake
                 </Button>
               </FormControl></form>
+              <Button onClick={ModalOnClickUnStake} bg={'green.400'} color={'white'} rounded={'xl'} boxShadow={'0 5px 20px 0px rgb(72 187 120 / 43%)'} _hover={{ bg: 'green.500', }} _focus={{ bg: 'green.500', }}>
+              UnStake
+              </Button>
+              <Button onClick={OnClickClaim} bg={'green.400'} color={'white'} rounded={'xl'} boxShadow={'0 5px 20px 0px rgb(72 187 120 / 43%)'} _hover={{ bg: 'green.500', }} _focus={{ bg: 'green.500', }}>
+              Claim
+              </Button>
             </VStack>
-            <Button mt={10} w={'full'} bg={'green.400'} color={'white'} rounded={'xl'} boxShadow={'0 5px 20px 0px rgb(72 187 120 / 43%)'} _hover={{ bg: 'green.500', }} _focus={{ bg: 'green.500', }} onClick={OnClickApprove}>
-                 Approve
-            </Button>
         </Box>
       </Box>
     </Center>

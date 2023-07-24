@@ -45,7 +45,7 @@ function Header() {
                 }
                 &emsp;&emsp;&emsp;
                 {shortAdd && isOwner
-                    ? <Tab bg="RED" align="end">{shortAdd}</Tab>
+                    ? <Tab _selected={{ color: 'white', bg: 'red.0' }} bg="RED" align="end">{shortAdd}</Tab>
                     : <Tab _selected={{ color: 'white', bg: 'green.400' }}>Connect</Tab>
                 }
                 </TabList>

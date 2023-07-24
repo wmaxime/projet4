@@ -104,7 +104,7 @@ contract Staking is Ownable {
 
     // Dans Remix utiliser IERC20 avec le parametre "At adress" adresse du token de rewards
     // puis dans l'interface "Approve" l'adresse du contrat de Staking et amount = 1000000000000000000 = 1 ETH
-    function deposit(uint256 _amount, address _tokenAddress) external {
+    function deposit(uint256 _amount, address _tokenAddress) external payable {
         //require(IERC20(_tokenAddress).allowance(msg.sender, address(this)) >= _amount, "Insufficient allowance");
          require(_amount > 0, "Amount must be over zero");
 
