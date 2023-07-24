@@ -36,10 +36,10 @@ function ManagePool() {
 
   return (
     <div className="App">
-      <DisplayPool />
+      <DisplayPool /><br></br>
     <Center>
        <WrapItem justifyContent="Center">
-        <Box bg="white" borderRadius="lg">
+        <Box bg="white" borderRadius="lg" >
           <Box m={1} color="#0B0E3F">
             <VStack spacing={5}><form onSubmit={handleSubmit}>
               <FormControl id="name">

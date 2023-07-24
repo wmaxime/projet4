@@ -76,6 +76,7 @@ contract Staking is Ownable {
     event Withdrawn (address receiver, address tokenAddress, uint256 amountWithdraw);
     event Claimed (address receiver, address tokenAddress, uint rewardClaimedAmount);
     event PausedPoolStatus (address tokenAddress, bool pausedStatus);
+    event PoolMinimumToClaimChanged (address tokenAddress, uint256 oldAmount, uint256 newAmount);
 
     function createLiquidityPool(address _tokenAddress, uint256 _apr, uint256 _fees, uint256 _minimumClaim, string calldata _symbol) external onlyOwner {
         require(!poolData[_tokenAddress].isCreated, "This pool is already created");
@@ -100,6 +101,13 @@ contract Staking is Ownable {
         require(poolData[_tokenAddress].isCreated, "This pool is not created");
         poolData[_tokenAddress].paused = _value;
         emit PausedPoolStatus(_tokenAddress, _value);
+    }
+
+    function setPoolMinimumToClaim(address _tokenAddress, uint256 _amount) external onlyOwner {
+        require(poolData[_tokenAddress].isCreated, "This pool is not created");
+        uint256 oldValue = poolData[_tokenAddress].minimumClaim;
+        poolData[_tokenAddress].minimumClaim = _amount;
+        emit PoolMinimumToClaimChanged(_tokenAddress, oldValue, _amount);
     }
 
     // Dans Remix utiliser IERC20 avec le parametre "At adress" adresse du token de rewards
