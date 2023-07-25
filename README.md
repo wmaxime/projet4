@@ -1,6 +1,6 @@
 # Projet Final - Plate forme de staking : EV Card Charging
 
-EVA est une application décentralisée (DAPP) qui permet d'obtenirune carte de recharge pour les véhicules électriques.
+EVA est une application décentralisée (DAPP) qui permet d'obtenir une carte de recharge pour les véhicules électriques.
 
 Pour créditer les recharges, les utilsiateurs doivent staker le token du projet EVCT afin d'utiliser les récompenses pour solder leur utilisations.
 
@@ -41,13 +41,6 @@ Pour ce projet, j'ai choisi d'utiliser la Truffle Box React car :
 - le plus simple à utiliser pour moi
 - je n'ai pas eu le temps à me consacrer à utiliser Hardhat, Ethers, Wagmi, RainbowKit
 
- # Points d'amélioration :
-
- - dans le tableau de la liste des Voteurs, ajouter une colonne hasVoted (Permet de clôturer les votes si besoin)
- - dans le tableau de la liste des Propositions, ajouter une colonne avec le nombre de votes (voteCount)
- - remonter les composanst dans une architecture moins profonde => simplifier l'architecture des dossiers et fichiers
- - ajouter des effets aux différents boutons, des images, un background...
-
 # Périmètre de l'application réalisée
 ## La platefarme EVA doit permettre : 
 
@@ -70,11 +63,17 @@ Administrateur:
 
 # Captures écrans
 
-<img src="/img/VotingBox_Start.png" ">
+<img src="/img/EVA_Home.png">
 
-<img src="/img/VotingBox_VisitorFin.png" >
+<img src="/img/EVA_StakingPlans.png" >
 
-<img src="/img/VotingBox_AdminFin.png" >
+<img src="/img/EVA_StakeEVCT.png" >
+
+<img src="/img/EVA_Admin1.png" >
+
+<img src="/img/EVA8CreatePool.png" >
+
+<img src="/img/EVA_ManagePool.png" >
 
 
 
