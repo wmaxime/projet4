@@ -17,6 +17,8 @@ function MyStakingPlan() {
   const [amountToStake, setAmountToStake] = useState();
 
   useEffect (() => {
+
+
     async function getListePools() {
       // recuperation depuis les events
       const ListePoolsEvent = await contract.getPastEvents(
@@ -56,7 +58,7 @@ function MyStakingPlan() {
       const decimalRewards = parseFloat(web3js.utils.fromWei(userRewards)).toFixed(1);
       //console.log( "VALUE =================== " +  parseFloat(toto).toFixed(1) );
       //console.log("TYPEOF =================== " + typeof toto);
-      //console.log("VALUE DECIMAL ============ " + decimalRewards);
+      console.log("VALUE DECIMAL ============ " + decimalRewards);
       if ( decimalRewards === "0.0") {
         setUserRewards("0");
       } else {
@@ -96,7 +98,7 @@ function MyStakingPlan() {
         window.location.reload(false);
         return;
     }
-    alert(amountToStake);
+    //alert(amountToStake);
     await contract.methods.withdraw(addressEVCT, amountToStake).send({ from: accounts[0] });
     window.location.reload(true);
   }
@@ -112,13 +114,8 @@ function MyStakingPlan() {
     window.location.reload(true);
   }
 
-/*  const OnClickApprove = async (event) => {
-      const res = await contract.methods.approveEVCT(addressEVCT, 9999999999).send({ from: accounts[0] });
-      console.log("APPROVE RESULT ======================> " + res);
-  } */
-
   return (
-<Center py={6}>
+    <Center py={6}>
       <Box
         maxW={'350'}
         w={'full'}

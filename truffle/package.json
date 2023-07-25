@@ -3,9 +3,8 @@
   "version": "0.1.0",
   "description": "Truffle project with SimpleStorage contract",
   "scripts": {
-    "test": "truffle test",
-    "ganache": "ganache -D --wallet.accounts='0x638764ea9ef9f2b04bc076711b66ad9398b73466bee47814b752df799bc04ee3','0X56BC75E2D63100000' --wallet.accounts='0xab0aeecdf32dfd9e93b2a0e047644b4b833e71c7e7d35df49a52f413f647f4b3','0X56BC75E2D63100000' --wallet.accounts='0x3c7425960b596aa63750ffca9f5887a64217090a00fa95123f2ba117eb5ac6a8','0X56BC75E2D63100000' --wallet.accounts='0x148eb8608da8c8d759fb829b4e582a3c7f744e2f11e81284298bcfe6858d1ec3','0X56BC75E2D63100000'"
-  },
+    "test": "truffle test"
+   },
   "dependencies": {
     "@chainlink/contracts": "^0.6.1",
     "@openzeppelin/contracts": "^4.9.2",

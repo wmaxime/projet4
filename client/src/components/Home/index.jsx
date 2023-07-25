@@ -10,8 +10,12 @@ import {
   createIcon,
 } from '@chakra-ui/react';
 import { NavLink } from 'react-router-dom';
+import Refresh from "../utils/refresh";
 
 function Home() {
+
+  Refresh();
+
   const Arrow = createIcon({
     displayName: 'Arrow',
     viewBox: '0 0 72 24',

@@ -9,6 +9,7 @@ function Header() {
     const [userAddress, setUserAddress] = useState("");
 
     useEffect(() => {
+
         // calcul short address to display
         const updateUserAddress = () => {
             if(accounts !== null) {
@@ -17,15 +18,15 @@ function Header() {
         }
         updateUserAddress();
 
-        // refresh de page si changement de compte ou Network dans Metamask 
-        if(window.ethereum) {
-            window.ethereum.on('chainChanged', () => {
+            // refresh de page si changement de compte ou Network dans Metamask 
+            if(window.ethereum) {
+                window.ethereum.on('chainChanged', () => {
                 window.location.reload();
-            })
-            window.ethereum.on('accountsChanged', () => {
+                })
+                window.ethereum.on('accountsChanged', () => {
                 window.location.reload();
-            })
-        }
+                })
+            }
 
     }, [accounts, contract]);
 
@@ -44,8 +45,8 @@ function Header() {
                     : <Tab></Tab>
                 }
                 &emsp;&emsp;&emsp;
-                {shortAdd && isOwner
-                    ? <Tab _selected={{ color: 'white', bg: 'red.0' }} bg="RED" align="end">{shortAdd}</Tab>
+                {shortAdd || isOwner
+                    ? <Tab _selected={{ color: 'white', bg: 'red.0' }} bg="RED" align="end">{shortAdd}</Tab>                   
                     : <Tab _selected={{ color: 'white', bg: 'green.400' }}>Connect</Tab>
                 }
                 </TabList>
