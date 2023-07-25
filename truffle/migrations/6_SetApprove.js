@@ -1,6 +1,3 @@
-const EVCT = artifacts.require("EVCT");
-const Vault = artifacts.require("Vault");
-const Staking = artifacts.require("Staking");
 
 module.exports = async function (deployer, networks, accounts) {
     await deployer.deploy(EVCT);
@@ -12,9 +9,8 @@ module.exports = async function (deployer, networks, accounts) {
     const staking = await Staking.deployed();
 
     // Allow Owner as Admin
-    const owner = accounts[0];
-    const user1 = accounts[1];
-    const user2 = accounts[2];
+    const owner = "0x3db1D9176cc6a48CA9606072456aA993168561F8";
+    const user1 = "0x0B55388568D8F0d38c13Ff88584963509158707A";
     const amount = 99999999;
     //console.log("ACCOUNT ============ " + owner);
  
@@ -26,11 +22,9 @@ module.exports = async function (deployer, networks, accounts) {
 
     //Mint or Ganache users
     await token.mint(user1, amount);
-    await token.mint(user2, amount);
 
     //Approve
-    await token.approve(staking.address, amount * 3, { from: owner });
-    await token.approve(staking.address, amount * 3, { from: user1 });
-    await token.approve(staking.address, amount * 3, { from: user2 });
+    //await token.approve(staking.address, amount, { from: owner });
+    //await token.approve(staking.address, amount, { from: user1 });
 
 };

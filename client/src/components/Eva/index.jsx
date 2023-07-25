@@ -1,9 +1,9 @@
 
 function Eva() {
     return (
-      <main>
+      <center><main>
         <p>Welcome EVA CARD</p>
-      </main>
+      </main></center>
     );
   }
   
